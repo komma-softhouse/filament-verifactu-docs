@@ -55,16 +55,16 @@ Everything past that is a fluent opt-in on `VerifactuPlugin::make()`:
 
 ## 3. The add-on question: what maps to what
 
-**Print Agent is a genuinely natural add-on to charge for separately:**
-it's the only toggle that ships an *installable Windows service* (the
+Print Agent is a genuinely natural add-on to charge for separately: it's
+the only toggle that ships an *installable Windows service* (the
 installer/uninstaller `.bat` generation, NSSM, the pairing/online-status
 UI) rather than just unlocking a code path — a physically separate thing a
 till needs installed on it, per device.
 
-Whether `->face()`, `->faceb2b()`, `->ocr()` become their own paid tiers
+**Whether `->face()`, `->faceb2b()`, `->ocr()` become their own paid tiers
 on Anystack (vs. bundled into the base price) is a pricing call, not an
-engineering one, and it's yours to make, not mine to invent. What's true
-factually: each one is cleanly separable (its own toggle, its own
+engineering one, and it's yours to make, not mine to invent.** What I can
+tell you factually: each one is cleanly separable (its own toggle, its own
 migrations, its own resources — turning one off doesn't touch the others),
 so whatever split you land on, Anystack's per-product-tier model (see the
 launch guide) can express it without any code changes — the toggles
