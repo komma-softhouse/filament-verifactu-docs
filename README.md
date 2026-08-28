@@ -89,8 +89,49 @@ chain and nothing else; every other module is a fluent opt-in.
 
 ## Installation
 
+This is a commercial package distributed through
+[Anystack](https://anystack.sh) — it is not on public Packagist. Your
+license key is what authenticates the download.
+
+**1. Add the private repository** to your project's `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://filament-verifactu.composer.sh"
+        }
+    ]
+}
+```
+
+**2. Require the package:**
+
 ```bash
 composer require komma-softhouse/filament-verifactu
+```
+
+Composer will prompt for authentication against
+`filament-verifactu.composer.sh`:
+
+- **Username**: the email address your license is registered to.
+- **Password**: your license key. If your license policy requires a
+  fingerprint, append it to the key separated by a colon —
+  `your-license-key:your-domain.com` — using the fingerprint you entered
+  when activating the license.
+
+Answer yes when Composer offers to store the credentials (they go in
+`auth.json` — add that file to `.gitignore`). For CI, configure the same
+credentials as http-basic auth from your secrets instead:
+
+```bash
+composer config http-basic.filament-verifactu.composer.sh your@email.com YOUR-LICENSE-KEY
+```
+
+**3. Migrate:**
+
+```bash
 php artisan migrate
 ```
 
@@ -153,9 +194,10 @@ variable. The full list:
 
 ```
 # ComputerSystem identification (RRSIF art. 8.1/13 — the implementer's
-# responsible declaration; required before the first submission)
-VERIFACTU_VENDOR_NAME="Komma SoftHouse"
-VERIFACTU_VENDOR_NIF=B75447854
+# responsible declaration; required before the first submission).
+# Use YOUR OWN company's data here — you are the implementer.
+VERIFACTU_VENDOR_NAME="Your Company SL"
+VERIFACTU_VENDOR_NIF=B00000000
 VERIFACTU_SYSTEM_NAME="Komma Fiscal"
 VERIFACTU_SYSTEM_ID=01
 VERIFACTU_SYSTEM_VERSION=1.0
