@@ -473,18 +473,29 @@ signatures) is implemented at the service/facade layer but has no dedicated
 panel screen yet for browsing invoices this issuer has received.
 
 ## Scope
-
-TicketBAI's Zuzendu (subsanación) is not implemented for Bizkaia — its own
-`Endpoint` class rejects it outright; that territory's corrections go
-through Batuz/LROE's own modification operations instead, which this
-package does not build. TicketBAI's breakdown only covers goods/services
-sold nationally or abroad as classified by each line's own AEAT-style
-operation code (S1/S2/E1-E6/N1-N2) — foreign lines default to the "service"
-category absent a line-level goods/services signal in `BreakdownData`, the
-same honest limitation Modelo 349's classification already documents.
-Modelo 111 and 115 are manual entry calculators: this plugin fiscalizes
-sales and has no visibility into payroll or rent payments the business
-makes.
+ 
+TicketBAI's Zuzendu (a narrow operation — patching a metadata/description
+error on an already-sent invoice without touching its totals) is not
+implemented for Bizkaia — its own `Endpoint` class hardcodes a rejection
+for it (`throw new InvalidTerritoryException(...)`, no HTTP call attempted
+at all), while implementing everything else for that territory in full,
+including its own separate LROE expense-reporting endpoints; that strongly
+suggests the operation genuinely doesn't exist on Bizkaia's side rather
+than being an oversight in the library, though this isn't confirmed
+against an official Diputación document directly. That territory handles
+such fixes by cancelling and reissuing instead. This does **not** affect
+corrections in the ordinary sense: rectifying/corrective invoices (R1-R5,
+the `CreditNoteService` flow) work identically for all three territories,
+Bizkaia included — they travel through the same ordinary registration
+path as any new invoice, never through Zuzendu.
+TicketBAI's breakdown only covers goods/services sold nationally or abroad
+as classified by each line's own AEAT-style operation code
+(S1/S2/E1-E6/N1-N2) — foreign lines default to the "service" category
+absent a line-level goods/services signal in `BreakdownData`, the same
+honest limitation Modelo 349's classification already documents. Modelo
+111 and 115 are manual entry calculators: this plugin fiscalizes sales and
+has no visibility into payroll or rent payments the business makes.
+ 
 
 ## Architecture and add-on pricing
 
