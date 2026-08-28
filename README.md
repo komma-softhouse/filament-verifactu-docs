@@ -4,7 +4,7 @@
     <img
         src="./assets/01.jpg"
         alt="Filament Verifactu documentation"
-        width="75%"
+        width="100%"
     >
 </p>
 
