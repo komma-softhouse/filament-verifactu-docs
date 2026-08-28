@@ -2,7 +2,7 @@
 
 <p align="center">
     <img
-        src="https://raw.githubusercontent.com/komma-softhouse/filament-verifactu/main/.github/assets/01.jpg"
+        src="/assets/01.jpg"
         alt="Filament Spanish fiscal compliance for Filament v5"
         width="100%"
     >
