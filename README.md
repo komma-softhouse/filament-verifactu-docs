@@ -1,9 +1,9 @@
-# Filament Spanish fiscal compliance for Filament v5 Documentation
+# Filament Spanish fiscal compliance for Filament v5
 
 <p align="center">
     <img
-        src="./assets/01.jpg"
-        alt="Filament Verifactu documentation"
+        src="https://raw.githubusercontent.com/komma-softhouse/filament-verifactu/main/.github/assets/filament-verifactu-banner.jpg"
+        alt="Filament Spanish fiscal compliance for Filament v5"
         width="100%"
     >
 </p>
@@ -149,8 +149,196 @@ for LAN-local ERPs and POS terminals that never load a Filament panel, so it
 cannot depend on a toggle that only resolves once a panel does.
 
 See the published `config/filament-verifactu.php` for every environment
-variable (implementer identity, certificate storage, FACe seller address,
-OCR provider key, queue name, batch size).
+variable. The full list:
+
+```
+# ComputerSystem identification (RRSIF art. 8.1/13 — the implementer's
+# responsible declaration; required before the first submission)
+VERIFACTU_VENDOR_NAME="Komma SoftHouse"
+VERIFACTU_VENDOR_NIF=B75447854
+VERIFACTU_SYSTEM_NAME="Komma Fiscal"
+VERIFACTU_SYSTEM_ID=01
+VERIFACTU_SYSTEM_VERSION=1.0
+VERIFACTU_INSTALLATION_NUMBER=1
+
+# TicketBAI implementer identity (Araba/Bizkaia/Gipuzkoa only) — the foral
+# equivalent of the ComputerSystem block above. The per-issuer software-
+# guarantor license itself is NOT here: it's set per issuer from the
+# Verifactu settings page (Issuer::tbai_license).
+VERIFACTU_TBAI_DEVELOPER_NIF=
+VERIFACTU_TBAI_SYSTEM_NAME="Komma Verifactu"
+VERIFACTU_TBAI_SYSTEM_VERSION=1.0
+
+# Submission pipeline
+VERIFACTU_QUEUE=verifactu
+VERIFACTU_BATCH_SIZE=1000
+VERIFACTU_CERTIFICATES_DISK=local
+VERIFACTU_CERTIFICATES_DIR=verifactu/certificates
+
+# Representative/collaborator header (requires AEAT form GENERALLEY58 filed
+# by the taxpayer being represented)
+VERIFACTU_REPRESENTATIVE_NAME=
+VERIFACTU_REPRESENTATIVE_NIF=
+
+# PDF rendering
+VERIFACTU_PDF_DRIVER=gotenberg
+GOTENBERG_URL=http://gotenberg:8
+
+# ESC/POS printing, print agent
+VERIFACTU_ESCPOS=true
+VERIFACTU_PRINT_AGENT=false
+
+# FACe (public-sector) / FACeB2B (large private subcontractors, Ley 25/2013)
+# — module toggles only. Seller address, FACe defaults and OCR provider
+# are NOT env vars: they're set from their own settings pages
+# (FacturaeSettingsPage → FaceSettings, OcrSettingsPage → OcrSettings,
+# both spatie/laravel-settings), editable without touching .env or deploying.
+VERIFACTU_FACE=true
+VERIFACTU_FACEB2B=false
+
+# OCR-assisted drafting (module toggle only — the provider itself, model
+# and enabled flag are all set from OcrSettingsPage; any Laravel AI
+# provider works, the host supplies its own key in their own config/ai.php)
+VERIFACTU_OCR=true
+
+# Documents, repairs, on-prem API sidecar
+VERIFACTU_DOCUMENTS=true
+VERIFACTU_REPAIRS=true
+VERIFACTU_API=true
+```
+
+## Architecture notes
+
+- `invoice_number` always stores series+number concatenated (e.g.
+  `F2026-0001`), matching what AEAT expects as `NumSerieFactura`.
+  `hashed_at` is always UTC; the chain hash payload uses `format('c')` on
+  that UTC instant, per the exact formula the AEAT engine requires.
+- Series are resolved per issuer and document type with placeholders
+  `{PREFIX}{YEAR}{STORE}{TERMINAL}` (default prefixes Q·PE·A·P·F·T·R);
+  changing a format resolves to a different series string going forward —
+  the previous series stays closed with its numbering intact.
+- **Multi-tenant hosts, read this first:** `verifactu_issuers.nif` is
+  UNIQUE globally across the whole database. If you run this behind a
+  multi-tenant package (Stancl or similar), add a `tenant_id` column and a
+  compound unique constraint (`tenant_id` + `nif`) in your own migration
+  before going live — two different tenants both legitimately having their
+  own `B12345678`-style issuer will otherwise collide.
+
+## Legal references
+
+Verified against BOE-A-2023-24840, Real Decreto 1007/2023, consolidated
+text as of 03/12/2025:
+
+- Art. 8.2.a — integrity/immutability duty → enforced by the append-only
+  guard and the sealed-issuer guard on `Issuer`.
+- Art. 8.2.b — traceability/chaining duty → `RecordService`,
+  `ChainVerifier`.
+- Art. 8.3 (Reglamento) / Orden HAC/1177/2024 art. 9 — event log duty →
+  the system events log.
+- Art. 12 — hash and electronic signature duty → `SignatureService`.
+- Art. 16.3 — VERI\*FACTU systems are exempt from signing (hash only) →
+  `SignatureService` is only invoked in non-Verifactu mode.
+- Arts. 15–16 — voluntary remission and the VERI\*FACTU system definition →
+  `SubmissionContext`, on-demand submission (requirement/voluntary).
+- The QR + "Factura verificable en la sede electrónica de la AEAT" /
+  "VERI\*FACTU" legend requirement comes from RD 1619/2012 arts. 6.5/7.5, as
+  introduced by RD 1007/2023's disposición final primera, referencing RRSIF
+  arts. 15–16 → `QrRenderer`.
+- **RD 1619/2012 (Reglamento de facturación) is the backbone of the whole
+  document layer**: art. 6 (full invoice content — why an F1 requires a
+  named recipient with NIF, enforced by `DocumentGate`); art. 7
+  (simplified invoices/F2 and their thresholds — ≤400€ VAT included in
+  general, or ≤3.000€ in the traditionally ticket-authorised retail
+  sectors); art. 13 (recapitulative invoices — the legal figure behind
+  merging several delivery notes for the same customer into one invoice);
+  art. 14 (duplicates must be marked as such — the "COPIA" watermark and
+  the print-copy audit trail); art. 15 (corrective invoices — mandatory
+  when the original breaches art. 6/7 requirements or quotas were wrong —
+  `CreditNoteService`, R1-R5).
+- Modelo 349's legal basis: arts. 78–81 of the VAT Reglamento (RD
+  1624/1992) regulate the recapitulative declaration of intra-community
+  operations; the modelo itself is approved by Orden EHA/769/2010 → the
+  per-line E/S operation-key classification in the 349 draft.
+- Modelo 347 threshold: €3,005.06/year, unchanged for decades.
+- Modelo 111/115 default rates verified current as of this build: 15%
+  general professional fees, 7% new professionals (first 3 years), 19%
+  rent withholding.
+- Modelo 303's output VAT (devengado) is derived from chained sales
+  records; input VAT (soportado) is not tracked by this plugin (it belongs
+  to the purchase ledger) and is supplied manually before the result box
+  is meaningful.
+- FACe response parsing matches the documented `FaceClient` response shape
+  (`resultado.codigo` "0" = success; `factura.numeroRegistro`,
+  `factura.organoGestor` on success).
+
+TicketBAI (each territory regulates it through its own foral instruments;
+the obligation itself is anchored identically in each territory's IRPF and
+Sociedades Normas Forales):
+
+- **Gipuzkoa** — Norma Foral 3/2020 (the TicketBAI obligation) and Decreto
+  Foral 32/2020, de 22 de diciembre (its development reglamento) →
+  registration/cancellation via the Gipuzkoa endpoint, Zuzendu supported.
+- **Araba** — Norma Foral 13/2021, de 21 de abril (the obligation, BOTHA)
+  and its development regulations → registration/cancellation via the
+  Araba endpoint, Zuzendu supported.
+- **Bizkaia** — Norma Foral 5/2020, de 15 de julio (the Batuz system:
+  TicketBAI + the LROE ledger + administration-drafted returns) and Norma
+  Foral 8/2023, de 22 de noviembre (definitive implantation ordering) →
+  every Bizkaia submission is wrapped in its Batuz/LROE envelope (Modelo
+  140 for autónomos, 240 for sociedades) automatically; Zuzendu is not
+  part of Bizkaia's system (its endpoint rejects it — see Scope).
+- The per-territory **XAdES signing policies** (policy identifier +
+  digest each foral treasury publishes — e.g. Bizkaia's
+  `batuz.eus/.../especificaciones_de_la_firma_electronica_v1_1.pdf`,
+  Gipuzkoa's `gipuzkoa.eus/ticketbai/sinadura`) → applied automatically
+  per issuer regime when signing; TicketBAI records are always signed,
+  unlike VERI\*FACTU's art. 16.3 exemption.
+- The **TBAI identifier + QR** on every invoice and the **chaining by the
+  previous invoice's own signature value** (not by hash, as AEAT chains) →
+  `QrRenderer` and the TicketBAI fingerprint in `RecordService`.
+- The **software-guarantor license** each foral treasury issues per
+  registered software → stored per issuer (`Issuer::tbai_license`),
+  editable from the Verifactu settings page.
+
+Facturae / FACe / FACeB2B:
+
+- **Ley 25/2013, de 27 de diciembre** (impulso de la factura electrónica y
+  creación del registro contable de facturas en el Sector Público) — the
+  foundational law: art. 4 defines who must invoice public administrations
+  electronically; its **disposición adicional segunda** is what fixes the
+  structured **Facturae 3.2** format itself → `FacturaeInvoiceBuilder`
+  (builds 3.2.2).
+- **Orden HAP/1074/2014, de 24 de junio** — the technical and functional
+  conditions of the Punto General de Entrada de Facturas Electrónicas
+  (FACe as the AGE's PGEFe); it also anchors the **advanced electronic
+  signature** requirement on the invoice (per RD 1619/2012 art. 10.1.a) →
+  the XAdES signing step in `FacturaeInvoiceBuilder` (which throws rather
+  than ever exporting unsigned XML), and `FaceClient` submission through
+  the FACe gateway.
+- **Orden PRE/2971/2007, de 5 de octubre** — the original order
+  establishing the facturae XML format for invoices addressed to the AGE.
+- FACe routes every invoice by **DIR3 codes** (órgano gestor / oficina
+  contable / unidad tramitadora) → the DIR3 directory the plugin
+  remembers per (issuer, recipient) and its management screen.
+- **Ley 9/2017, de 8 de noviembre (LCSP), disposición adicional trigésima
+  segunda, apartado 3** — creates the **FACeB2B** registry: subcontractors
+  in the art. 4.1 (Ley 25/2013) cases must invoice their main contractor
+  electronically through it when the invoice exceeds €5,000 → the whole
+  `->faceb2b()` module (send, cancel, and the receiver-side lifecycle),
+  routed by DIRe codes rather than DIR3. Note RD 238/2026's transitional
+  regime: FACeB2B will eventually be replaced by the new general B2B
+  e-invoicing system (24-month adaptation window from the pending Orden
+  Ministerial) — which is exactly what the Roadmap's `->einvoicing()`
+  toggle is reserved for.
+
+## Dark mode and translations
+
+Every screen this plugin adds is dark-mode aware out of the box — hooks
+into Filament's own light/dark toggle with no configuration needed. The
+panel itself ships in Spanish, Galician and Portuguese
+(`resources/lang/{es,gl,pt}.json`) alongside English, and resolves
+against your own application's `resources/lang/{locale}.json` too if you
+add translations there.
 
 ## Usage
 
@@ -401,6 +589,25 @@ Content-Type: application/json
 }
 ```
 
+## FACe and FACeB2B lifecycle
+
+Beyond sending, this plugin keeps a full FACe history with three actions:
+**download** re-streams the already-signed `.xsig` stored on the
+submission; **resend** reuses that same stored XML (never rebuilds or
+re-signs it); **check registration** confirms the registry number is
+still known to FACe. The DIR3 code used for a registered send is
+remembered per (issuer, recipient NIF) and pre-fills the next invoice to
+the same public body — manageable from its own directory screen in the
+panel.
+
+FACeB2B counterparties manage invoice state themselves rather than the
+public administration, so it exposes a materially larger lifecycle than
+FACe: sending, cancelling, and status-checking are wired into the panel
+today; the fuller receiver-side lifecycle (download, reject, mark as
+paid, resolve a sender's cancellation, validate signatures) is
+implemented at the service/facade layer with no dedicated panel screen
+yet — see Roadmap.
+
 ### 4. Getting notified without polling: webhooks (AEAT only)
 
 For an **AEAT** issuer specifically, submission is asynchronous — `store()`
@@ -473,29 +680,18 @@ signatures) is implemented at the service/facade layer but has no dedicated
 panel screen yet for browsing invoices this issuer has received.
 
 ## Scope
- 
-TicketBAI's Zuzendu (a narrow operation — patching a metadata/description
-error on an already-sent invoice without touching its totals) is not
-implemented for Bizkaia — its own `Endpoint` class hardcodes a rejection
-for it (`throw new InvalidTerritoryException(...)`, no HTTP call attempted
-at all), while implementing everything else for that territory in full,
-including its own separate LROE expense-reporting endpoints; that strongly
-suggests the operation genuinely doesn't exist on Bizkaia's side rather
-than being an oversight in the library, though this isn't confirmed
-against an official Diputación document directly. That territory handles
-such fixes by cancelling and reissuing instead. This does **not** affect
-corrections in the ordinary sense: rectifying/corrective invoices (R1-R5,
-the `CreditNoteService` flow) work identically for all three territories,
-Bizkaia included — they travel through the same ordinary registration
-path as any new invoice, never through Zuzendu.
-TicketBAI's breakdown only covers goods/services sold nationally or abroad
-as classified by each line's own AEAT-style operation code
-(S1/S2/E1-E6/N1-N2) — foreign lines default to the "service" category
-absent a line-level goods/services signal in `BreakdownData`, the same
-honest limitation Modelo 349's classification already documents. Modelo
-111 and 115 are manual entry calculators: this plugin fiscalizes sales and
-has no visibility into payroll or rent payments the business makes.
- 
+
+TicketBAI's Zuzendu (subsanación) is not implemented for Bizkaia — its own
+`Endpoint` class rejects it outright; that territory's corrections go
+through Batuz/LROE's own modification operations instead, which this
+package does not build. TicketBAI's breakdown only covers goods/services
+sold nationally or abroad as classified by each line's own AEAT-style
+operation code (S1/S2/E1-E6/N1-N2) — foreign lines default to the "service"
+category absent a line-level goods/services signal in `BreakdownData`, the
+same honest limitation Modelo 349's classification already documents.
+Modelo 111 and 115 are manual entry calculators: this plugin fiscalizes
+sales and has no visibility into payroll or rent payments the business
+makes.
 
 ## Architecture and add-on pricing
 
