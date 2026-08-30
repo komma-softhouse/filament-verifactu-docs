@@ -962,6 +962,14 @@ decision.
 composer test
 ```
 
+The suite ships with the package — 177 tests covering the chained hash
+formula against the AEAT payload spec, record immutability, sealed
+activation, gapless numbering, both remission modes and their guards, the
+TicketBAI driver per territory (including Zuzendu and the Batuz
+envelopes), Facturae validation, the FACe/FACeB2B lifecycles, the API
+sidecar, document totals in bcmath, and the printing pipeline. Run it
+after installing to verify your environment.
+
 Run the local homologation battery against a disposable sandbox issuer
 before going live:
 
