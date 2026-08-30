@@ -43,7 +43,15 @@ territories) their own TicketBAI regulation.
   it — impossible to fork, impossible to edit afterwards.
 - **Submits to the AEAT** in both remission modes: continuous (VERI\*FACTU)
   and on-demand (signed XML batches, answering a requirement or opened as a
-  voluntary remission), respecting the AEAT's flow-control window.
+  voluntary remission whenever the issuer decides — a dedicated panel
+  action carries the legal context), respecting the AEAT's flow-control
+  window. The continuous pipeline refuses non-Verifactu issuers by design:
+  their records only ever leave on demand.
+- **Reads back from the AEAT** (`ConsultaFactuSistemaFacturacion`): asks
+  the office what IT holds for a record — state, presentation data, and
+  the hash it stores, cross-checked against our own chain — and translates
+  every rejection through the official 239-code error catalog, with its
+  severity (whole-submission / this-record / accepted-but-fix).
 - **Submits to TicketBAI** (Araba, Bizkaia, Gipuzkoa) through the exact same
   `RecordService` gate — a completely separate engine under the hood, with
   its own signature-value chaining, registration, cancellation, corrective
@@ -53,6 +61,10 @@ territories) their own TicketBAI regulation.
 - **Signs with XAdES-BES** when an AEAT issuer operates in non-Verifactu
   mode (VERI\*FACTU systems are exempt from signing per art. 16.3 — hash
   only); TicketBAI records are always signed, per its own regulation.
+  Certificates live per issuer, with a **global social-collaborator
+  certificate** (the advisory-firm scenario: one gestoría certificate
+  signing for every client issuer that has none of its own) as automatic
+  fallback across all four signers.
 - **Runs the whole document lifecycle**: quotes → orders → delivery notes →
   proformas → invoices/tickets, a forward-only conversion graph (including
   merging several delivery notes into one invoice), credit notes with
@@ -62,17 +74,36 @@ territories) their own TicketBAI regulation.
 - **Prints**: A4 with automatic draft/copy watermarking, and 14 kinds of
   ESC/POS thermal ticket — including a paired **Print Agent** add-on
   (Windows service installer generated from the panel) for hosts that can't
-  talk to a receipt printer directly from the browser.
+  talk to a receipt printer directly from the browser. The tributary QR can
+  also be inspected on screen, with a live self-check of its URL against
+  the record and the issuer environment (sandbox/production drift is
+  flagged before it ever reaches paper).
 - **Sends to FACe** (public-sector electronic invoicing) and **FACeB2B**
   (Ley 25/2013's separate, already-active extension to large private
   subcontractors of public administrations — full lifecycle, both as sender
   and as receiver: send, cancel, download, reject, mark as paid, resolve
-  cancellations, validate signatures), and offers OCR-assisted drafting
-  from a photo via [Laravel AI](https://laravel.com/docs/13.x/ai-sdk) — the
-  host picks any provider they already hold a key for, never locked to one.
+  cancellations, validate signatures), with the full compliance pack a real
+  town hall validated: three DIR3 centres, Ref. Receptor contract
+  reference, issuer IBAN as transfer account, due date, optional embedded
+  invoice PDF, TSA timestamping, and a pre-flight validator. Facturae can
+  also be generated **signed or unsigned** for external inspection, an
+  existing paper/PDF invoice can be transcribed by OCR into a standalone
+  Facturae (amounts copied literally, never recomputed), and every
+  delivered XML stays inspectable pretty-printed from the history. It also
+  offers OCR-assisted drafting from a photo via
+  [Laravel AI](https://laravel.com/docs/13.x/ai-sdk) — the host picks any
+  provider they already hold a key for, never locked to one.
 - **Exposes an on-prem API sidecar** so external ERPs/POS terminals can
   register records and fetch a QR synchronously, authenticated per issuer,
-  with signed webhooks on every accepted/rejected submission.
+  with signed webhooks on every accepted/rejected submission — and an API
+  panel page listing every endpoint, managing per-issuer bearer keys and
+  showing a truthful first call.
+- **Ships advisory-firm bulk flows**: select a period's documents and
+  download one ZIP of PDFs or one ZIP of signed Facturae, and requeue
+  rejected records in bulk.
+- **Gates every panel action behind a configurable authorization system**
+  (see [Authorization](#authorization)) — everything enabled by default,
+  each of the 39 abilities switchable globally or per user.
 - **Drafts Modelos 303, 347, 349 (real E/S classification from each
   record's own data), 111 and 115** for the accountant, each exportable
   as CSV.
@@ -176,13 +207,14 @@ the first submission — see [Configuration](#configuration).
 | `->escPos()` | Thermal ticket printing |
 | `->printAgent()` | Print agent pairing page and installer generation |
 | `->einvoincing()` | Pending BOE publication of the Orden Ministerial (Ley Crea y Crece / RD 238/2026) |
-| `->face()` | FACe: the "Send to FACe" action, history, settings and generate pages |
+| `->face()` | FACe: the "Send to FACe" action, history, settings, generate and directory pages |
 | `->faceb2b()` | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
 | `->ocr()` | The "Create from photo" OCR-assisted draft action and its settings page |
 | `->api()` | *(informational — see below)* |
 
 The core fiscal resources (Issuers, Fiscal records, Submissions, System
-events, Audit trail) and the five report pages are always registered.
+events, Audit trail), the Certificates and API panel pages, and the five
+report pages are always registered.
 
 The **API sidecar** is activated independently, via config/env
 (`VERIFACTU_API=true`), not through the fluent `->api()` call: it is meant
@@ -222,6 +254,12 @@ VERIFACTU_CERTIFICATES_DIR=verifactu/certificates
 VERIFACTU_REPRESENTATIVE_NAME=
 VERIFACTU_REPRESENTATIVE_NIF=
 
+# AEAT read-back (ConsultaFactuSistemaFacturacion) — defaults follow the
+# official WSDL; override only if the AEAT moves the service.
+VERIFACTU_AEAT_QUERY_SANDBOX=https://prewww1.aeat.es
+VERIFACTU_AEAT_QUERY_PRODUCTION=https://www1.agenciatributaria.gob.es
+VERIFACTU_AEAT_QUERY_PATH=/wlpl/TIKE-CONT/ws/SistemaFacturacion/ConsultaSOAP
+
 # PDF rendering
 VERIFACTU_PDF_DRIVER=gotenberg
 GOTENBERG_URL=http://gotenberg:8
@@ -238,6 +276,11 @@ VERIFACTU_PRINT_AGENT=false
 VERIFACTU_FACE=true
 VERIFACTU_FACEB2B=false
 
+# Optional TSA timestamping of the Facturae XAdES signature
+VERIFACTU_FACE_TSA_URL=
+VERIFACTU_FACE_TSA_USER=
+VERIFACTU_FACE_TSA_PASSWORD=
+
 # OCR-assisted drafting (module toggle only — the provider itself, model
 # and enabled flag are all set from OcrSettingsPage; any Laravel AI
 # provider works, the host supplies its own key in their own config/ai.php)
@@ -249,6 +292,121 @@ VERIFACTU_REPAIRS=true
 VERIFACTU_API=true
 ```
 
+## Authorization
+
+Every panel action — completing, voiding, sending to FACe, uploading
+certificates, generating API keys, all 44 of them — is gated through
+`VerifactuGate`, resolved in three layers, **most specific first and
+permissive by default** (a drop-in install shows everything):
+
+1. **A programmatic resolver**, when the host registered one — the escape
+   hatch for centralized custom logic. Return `null` to fall through to
+   the next layer:
+
+   ```php
+   use Komma\Verifactu\Support\VerifactuGate;
+
+   // e.g. in a service provider's boot():
+   VerifactuGate::resolveUsing(function (string $ability): ?bool {
+       if (str_starts_with($ability, 'download-')) {
+           return auth()->user()?->can('export-fiscal-data');
+       }
+
+       return null; // everything else falls through
+   });
+   ```
+
+2. **A Laravel Gate** named `verifactu.{ability}` — per-user control that
+   plays naturally with policies and spatie/laravel-permission. A defined
+   Gate always wins over the config switch:
+
+   ```php
+   use Illuminate\Support\Facades\Gate;
+
+   Gate::define('verifactu.void-document', fn ($user) => $user->hasRole('manager'));
+   Gate::define('verifactu.upload-certificate', fn ($user) => $user->hasPermissionTo('manage certificates'));
+   ```
+
+3. **The config switch** — `config('filament-verifactu.permissions.{ability}')`,
+   the global on/off layer, `true` when absent. Flip one to `false` to
+   hide that action for everyone:
+
+   ```php
+   // config/filament-verifactu.php
+   'permissions' => [
+       'void-document' => false,   // nobody voids from the panel
+       'query-aeat' => true,
+       // ... all 39 keys ship in the published config, grouped by domain
+   ],
+   ```
+
+An unauthorized action is **hidden** (Filament's native behavior): a
+cashier who cannot void documents never sees the button. The
+"How does it work?" help modals are deliberately ungated — read-only
+guidance stays visible to everyone.
+
+### The full ability list
+
+| Ability | Gates |
+| --- | --- |
+| **Documents** | |
+| `complete-document` | Completing a draft (numbering + chaining the fiscal record) |
+| `convert-document` | Forward conversions (quote → order → … → invoice) |
+| `create-from-photo` | OCR-assisted draft from a photo |
+| `merge-into-invoice` | Merging delivery notes into one invoice (bulk) |
+| `void-document` | Credit notes / cancellations |
+| `reprint-ticket` | Thermal reprint (the COPIA-marked duplicate) |
+| `send-by-email` | Emailing the document PDF |
+| `download-document` | PDF and HTML downloads of a document |
+| **FACe / Facturae** | |
+| `send-to-face` | Send to FACe action |
+| `send-to-faceb2b` | Send to FACeB2B action |
+| `download-facturae` | Signed/unsigned Facturae download from a document |
+| `generate-facturae` | The "New Facturae" page action |
+| `generate-facturae-ocr` | The "From PDF / photo (OCR)" standalone flow |
+| `check-face-registration` | Polling FACe and persisting the tramitación status |
+| `resend-to-face` | Resending a stored submission |
+| `cancel-faceb2b` | FACeB2B cancellation requests |
+| `download-xsig` | Downloading the stored signed `.xsig` |
+| `view-face-xml` | The pretty-printed XML inspector |
+| **Advisory-firm bulks** | |
+| `download-pdf-zip` | ZIP of selected documents' PDFs |
+| `download-facturae-zip` | ZIP of selected invoices as signed Facturae |
+| **Issuers & fiscal lifecycle** | |
+| `create-issuer` | Creating an issuer from auxiliary screens |
+| `activate-fiscal` | The sealed, irreversible fiscal activation |
+| `switch-to-verifactu` | The one-way non-Verifactu → VERI\*FACTU switch |
+| `edit-tbai-settings` | TicketBAI license and territory settings |
+| `remit-on-demand` | The non-Verifactu voluntary/requirement remission |
+| `upload-certificate` | Uploading an issuer certificate |
+| `remove-certificate` | Removing an issuer certificate |
+| `manage-social-collaborator` | The global gestoría certificate (upload and remove) |
+| `generate-api-key` | Generating a bearer key |
+| `revoke-api-key` | Revoking a bearer key |
+| **Fiscal records** | |
+| `resend-record` | Requeueing a rejected record (single and bulk) |
+| `download-tbai-xsig` | Downloading the signed TicketBAI XML |
+| `query-aeat` | The AEAT read-back (quick status and detailed modal) |
+| `view-qr` | Viewing and downloading the tributary QR |
+| **Templates & SAT** | |
+| `manage-templates` | Opening the template designer |
+| `transition-repair` | Moving a repair order through its lifecycle |
+| `deliver-repair` | Delivering (which issues the fiscal document) |
+| `print-repair-paper` | Deposit receipt and repair report printing |
+| `send-repair-by-email` | Emailing either SAT paper |
+
+Groupings are deliberate: receipt and report share `print-repair-paper`,
+the quick and detailed AEAT queries share `query-aeat`, viewing and
+downloading the QR share `view-qr`, PDF and HTML downloads share
+`download-document`, and the bulk requeue falls under `resend-record` —
+same power, different scale.
+
+Note the boundary: this system gates **panel actions**. Resource-level
+CRUD (viewing lists, editing an issuer's plain fields) follows Filament's
+standard model policies, exactly as in any Filament app; and the API
+sidecar authenticates by bearer key per issuer, independent of panel
+permissions.
+
 ## Architecture notes
 
 - `invoice_number` always stores series+number concatenated (e.g.
@@ -259,6 +417,10 @@ VERIFACTU_API=true
   `{PREFIX}{YEAR}{STORE}{TERMINAL}` (default prefixes Q·PE·A·P·F·T·R);
   changing a format resolves to a different series string going forward —
   the previous series stays closed with its numbering intact.
+- The Facturae seller block resolves **per issuer**: NIF and legal name
+  always come from the issuer; its fiscal address wins when filled, the
+  installation-wide one from the Facturae settings is the fallback — the
+  advisory-firm scenario (many issuers, one installation) depends on it.
 - **Multi-tenant hosts, read this first:** `verifactu_issuers.nif` is
   UNIQUE globally across the whole database. If you run this behind a
   multi-tenant package (Stancl or similar), add a `tenant_id` column and a
@@ -281,11 +443,14 @@ text as of 03/12/2025:
 - Art. 16.3 — VERI\*FACTU systems are exempt from signing (hash only) →
   `SignatureService` is only invoked in non-Verifactu mode.
 - Arts. 15–16 — voluntary remission and the VERI\*FACTU system definition →
-  `SubmissionContext`, on-demand submission (requirement/voluntary).
+  `SubmissionContext`, on-demand submission (requirement/voluntary) and the
+  "Remit on demand" panel action.
 - The QR + "Factura verificable en la sede electrónica de la AEAT" /
   "VERI\*FACTU" legend requirement comes from RD 1619/2012 arts. 6.5/7.5, as
   introduced by RD 1007/2023's disposición final primera, referencing RRSIF
-  arts. 15–16 → `QrRenderer`.
+  arts. 15–16 → `QrRenderer`, plus a self-check of the generated QR URL
+  (parameters against the record, environment against the issuer) wired
+  into the QR view modal and the homologation battery.
 - **RD 1619/2012 (Reglamento de facturación) is the backbone of the whole
   document layer**: art. 6 (full invoice content — why an F1 requires a
   named recipient with NIF, enforced by `DocumentGate`); art. 7
@@ -311,7 +476,13 @@ text as of 03/12/2025:
   is meaningful.
 - FACe response parsing matches the documented `FaceClient` response shape
   (`resultado.codigo` "0" = success; `factura.numeroRegistro`,
-  `factura.organoGestor` on success).
+  `factura.organoGestor` on success), and registration checks map the
+  tramitación codes (1200/1300/2400 registered · 2500 paid · 2600/3100
+  rejected) onto the submission's lifecycle status.
+- AEAT rejection codes are translated through the official
+  `errores.properties` catalog (239 codes) with the catalog's own three
+  severities: whole-submission rejection, per-record rejection, and
+  accepted-but-must-fix.
 
 TicketBAI (each territory regulates it through its own foral instruments;
 the obligation itself is anchored identically in each territory's IRPF and
@@ -354,13 +525,16 @@ Facturae / FACe / FACeB2B:
   conditions of the Punto General de Entrada de Facturas Electrónicas
   (FACe as the AGE's PGEFe); it also anchors the **advanced electronic
   signature** requirement on the invoice (per RD 1619/2012 art. 10.1.a) →
-  the XAdES signing step in `FacturaeInvoiceBuilder` (which throws rather
-  than ever exporting unsigned XML), and `FaceClient` submission through
-  the FACe gateway.
+  the XAdES signing step in `FacturaeInvoiceBuilder`. Signing is optional
+  only for local inspection downloads (an unsigned `.xml` to validate
+  externally); every submission to FACe is signed, always — the builder
+  throws rather than ever exporting a silently-unsigned submission.
 - **Orden PRE/2971/2007, de 5 de octubre** — the original order
   establishing the facturae XML format for invoices addressed to the AGE.
 - FACe routes every invoice by **DIR3 codes** (órgano gestor / oficina
-  contable / unidad tramitadora) → the DIR3 directory the plugin
+  contable / unidad tramitadora) — all **three centres** travel on every
+  submission, gestor/tramitador falling back to the accounting office
+  (the single-code town-hall case) → the DIR3 directory the plugin
   remembers per (issuer, recipient) and its management screen.
 - **Ley 9/2017, de 8 de noviembre (LCSP), disposición adicional trigésima
   segunda, apartado 3** — creates the **FACeB2B** registry: subcontractors
@@ -440,10 +614,10 @@ $issuer->activateFiscal(FiscalRegime::Aeat, FiscalMode::NonVerifactu);
 // $issuer->update(['tbai_license' => 'the software-guarantor license the foral treasury issued you']);
 ```
 
-Upload the issuer's certificate once (`CertificateService::store()`, or the
-"Upload certificate" action on `VerifactuSettingsPage` if the host software
-does load this plugin's own Filament panel for that one screen). The
-service itself has no Filament dependency at all:
+Upload the issuer's certificate once (`CertificateService::store()`, the
+"Upload certificate" action on `VerifactuSettingsPage`, or the Certificates
+page — all three manage the same certificate). The service itself has no
+Filament dependency at all:
 
 ```php
 use Komma\Verifactu\Enums\CertificateHolderType;
@@ -456,6 +630,21 @@ app(CertificateService::class)->store(
     CertificateHolderType::Obligado, // or Representative / SocialCollaborator
 );
 ```
+
+An advisory firm (gestoría) managing many client issuers can instead
+upload **one global social-collaborator certificate** — it signs and
+submits for every issuer that has no certificate of its own, across
+VERI\*FACTU, TicketBAI and Facturae alike:
+
+```php
+app(CertificateService::class)->storeSocialCollaborator(
+    file_get_contents('/path/to/gestoria.p12'),
+    'the passphrase',
+);
+```
+
+Resolution is always issuer-first: an issuer's own certificate wins; the
+social-collaborator one is the fallback; with neither, nothing signs.
 
 ### 2. Per sale: register, then print/display the QR
 
@@ -490,39 +679,46 @@ $qrUrl = Verifactu::qrUrl($record);       // or just the URL, to build your own 
 **This is not the whole picture for an AEAT issuer.** `register()` only
 chains and hashes the record locally (and, in non-Verifactu mode, signs it
 XAdES) — it does **not** submit to the AEAT by itself, in either
-remission mode. Something has to actually send the queue:
+remission mode. What actually sends depends on the issuer's mode:
 
-```php
-Verifactu::submitPending($issuer); // call this periodically
-```
+- **VERI\*FACTU mode** — continuous cadence: schedule
+  `php artisan verifactu:send-pending` every few minutes; it queues every
+  pending record automatically.
+- **Non-Verifactu mode** — records stay signed and local, and leave
+  **only on demand, whenever the issuer decides**: a voluntary remission
+  (no requirement needed — just pick the period end date) or an answer to
+  an AEAT requirement. Both from the "Remit on demand" action on the
+  Issuers list, or `php artisan verifactu:submit-batch` /
+  `BatchService::submitVoluntarily()` / `submitOnRequirement()`
+  programmatically. The continuous `verifactu:send-pending` pipeline
+  refuses these issuers by design — a non-Verifactu issuer can never be
+  drip-submitted by accident.
 
-Run it from a scheduled command (`php artisan verifactu:send-pending`,
-scheduled every few minutes for VERI\*FACTU's continuous cadence, or
-on-demand for non-Verifactu when answering a requirement/opening a
-voluntary remission). Skip this only for a **TicketBAI** issuer —
-`register()` there is fully synchronous end-to-end, nothing else to run.
+Skip all of this only for a **TicketBAI** issuer — `register()` there is
+fully synchronous end-to-end, nothing else to run.
 
-That is the entire integration surface: two calls (three if AEAT, for the
-submission cron), no Filament UI required on the host's side at all
-(though `php artisan migrate` still needs to have run, and the host
-process needs the certificate on disk/its configured disk, and — for AEAT
-— a queue worker running).
+That is the entire integration surface: two calls (three if AEAT
+VERI\*FACTU mode, for the submission cron), no Filament UI required on the
+host's side at all (though `php artisan migrate` still needs to have run,
+and the host process needs the certificate on disk/its configured disk,
+and — for AEAT — a queue worker running).
 
 ### 3. Or integrate from outside PHP entirely: the on-prem API sidecar
 
 For host software that isn't Laravel (or isn't PHP) at all, the same two
 steps go over HTTP instead — enable it with `VERIFACTU_API=true` and
-generate a bearer key per issuer from `VerifactuSettingsPage`.
+generate a bearer key per issuer from `VerifactuSettingsPage` or the API
+panel page.
 
 The same operational note from step 2 applies here too, just moved to the
-*server* side: for an AEAT issuer, whatever Laravel app is actually
-running this plugin (even if it only ever receives calls from the API,
-never loads its panel for anything else) still needs
+*server* side: for an AEAT VERI\*FACTU issuer, whatever Laravel app is
+actually running this plugin (even if it only ever receives calls from
+the API, never loads its panel for anything else) still needs
 `php artisan verifactu:send-pending` scheduled — the client calling the
 API is never responsible for that, only for calling `store()`/`cancel()`.
 
 ```
-POST /api/verifactu/records
+POST /api/v1/verifactu/records
 Authorization: Bearer vf_...
 Content-Type: application/json
 
@@ -549,7 +745,7 @@ an AEAT submission actually resolved (without setting up a webhook
 receiver — see below for that), poll the same id later:
 
 ```
-GET /api/verifactu/records/{id}
+GET /api/v1/verifactu/records/{id}
 Authorization: Bearer vf_...
 ```
 
@@ -558,7 +754,7 @@ Authorization: Bearer vf_...
 ```
 
 ```
-GET /api/verifactu/records/{id}/qr
+GET /api/v1/verifactu/records/{id}/qr
 Authorization: Bearer vf_...
 ```
 
@@ -567,7 +763,7 @@ invoice's data (Zuzendu — Araba/Gipuzkoa only, Bizkaia does not implement
 it) goes through its own endpoint rather than a new corrective invoice:
 
 ```
-POST /api/verifactu/records/correct
+POST /api/v1/verifactu/records/correct
 Authorization: Bearer vf_...
 Content-Type: application/json
 
@@ -596,7 +792,7 @@ sale's `invoice_number`/`issued_on`:
 {
   "invoice_number": "T2026-0002",
   "issued_on": "2026-08-27",
-  "invoice_type": "R1",
+  "invoice_type": "R5",
   "description": "Return: cold coffee",
   "corrective_type": "I",
   "corrected_invoices": [{"invoice_number": "T2026-0001", "issued_on": "2026-08-27"}],
@@ -608,39 +804,56 @@ sale's `invoice_number`/`issued_on`:
 }
 ```
 
-Bearer keys are generated per issuer from `VerifactuSettingsPage` in the
-panel.
+Bearer keys are generated per issuer from `VerifactuSettingsPage` or the
+API panel page.
 
 A host that built its own `FiscalDocument` (again, plain Eloquent — create
 the `FiscalDocument`/`DocumentLine` rows and call
 `app(Komma\Verifactu\Documents\Services\DocumentGate::class)->complete($document)`
 directly, no Filament UI required) can send it to FACe or FACeB2B the same
-way:
+way. The `seller_*` fields are optional — the issuer's fiscal address and
+the Facturae settings resolve them exactly as the panel does; send them
+only to override. The three DIR3 centres, the contract reference and the
+embedded-PDF flag travel too:
 
 ```
-POST /api/verifactu/face/send        (FACe — needs dir3_code + recipient_email)
-POST /api/verifactu/faceb2b/send     (FACeB2B — routes by buyer_nif, no DIR3)
+POST /api/v1/verifactu/face/send        (FACe — needs dir3_code + recipient_email)
+POST /api/v1/verifactu/faceb2b/send     (FACeB2B — routes by buyer_nif, no DIR3)
 Authorization: Bearer vf_...
 Content-Type: application/json
 
 {
   "document_id": 42,
-  "seller_address": "Av. Rosalía de Castro 24", "seller_post_code": "15960", "seller_town": "Ribeira", "seller_province": "A Coruña",
   "buyer_name": "Concello de Ribeira", "buyer_nif": "P1507400H",
-  "recipient_email": "notificaciones@ribeira.gal", "dir3_code": "L01150737"
+  "recipient_email": "notificaciones@ribeira.gal",
+  "dir3_code": "L01150737",
+  "dir3_gestor": null, "dir3_tramitador": null,
+  "contract_reference": "EXP 2026/0042",
+  "attach_pdf": true
 }
 ```
 
 ## FACe and FACeB2B lifecycle
 
-Beyond sending, this plugin keeps a full FACe history with three actions:
-**download** re-streams the already-signed `.xsig` stored on the
-submission; **resend** reuses that same stored XML (never rebuilds or
-re-signs it); **check registration** confirms the registry number is
-still known to FACe. The DIR3 code used for a registered send is
-remembered per (issuer, recipient NIF) and pre-fills the next invoice to
-the same public body — manageable from its own directory screen in the
-panel.
+Beyond sending, this plugin keeps a full FACe history: **download**
+re-streams the already-signed `.xsig` stored on the submission; **resend**
+reuses that same stored XML (never rebuilds or re-signs it); **view XML**
+shows the exact delivered Facturae pretty-printed; and **check
+registration** polls FACe, maps its tramitación codes (registered · paid ·
+rejected) and persists the new status on the submission — a town hall
+marking the invoice paid shows up in the history. Every submission runs a
+**pre-flight validator** first (totals against the engine's own math,
+IBAN mod-97, the three DIR3 centres, duplicate contract references).
+The DIR3 codes used for a registered send are remembered per (issuer,
+recipient NIF) and pre-fill the next invoice to the same public body —
+manageable from its own directory screen in the panel.
+
+Two more Facturae flows live next to the send action: **generate without
+submitting** (signed `.xsig`, or an unsigned `.xml` to inspect or run
+through an external validator first), and **from PDF/photo (OCR)** — an
+invoice that already exists on paper is transcribed literally (amounts
+copied verbatim, never recomputed) into a standalone Facturae, downloaded
+or delivered straight to FACe.
 
 FACeB2B counterparties manage invoice state themselves rather than the
 public administration, so it exposes a materially larger lifecycle than
