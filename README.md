@@ -4,12 +4,12 @@
     <img
         src="/assets/01.jpg"
         alt="Filament Spanish fiscal compliance for Filament v5"
-        width="100%"
+        width="50%"
     >
     <img
         src="/assets/certificados-resource.jpeg"
         alt="Certificates management — per-issuer and global social-collaborator certificates"
-        width="100%"
+        width="50%"
     >
 </p>
 
