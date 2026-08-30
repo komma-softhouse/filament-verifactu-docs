@@ -103,7 +103,7 @@ territories) their own TicketBAI regulation.
   rejected records in bulk.
 - **Gates every panel action behind a configurable authorization system**
   (see [Authorization](#authorization)) — everything enabled by default,
-  each of the 39 abilities switchable globally or per user.
+  each of the 38 abilities switchable globally or per user.
 - **Drafts Modelos 303, 347, 349 (real E/S classification from each
   record's own data), 111 and 115** for the accountant, each exportable
   as CSV.
@@ -211,10 +211,24 @@ the first submission — see [Configuration](#configuration).
 | `->faceb2b()` | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
 | `->ocr()` | The "Create from photo" OCR-assisted draft action and its settings page |
 | `->api()` | *(informational — see below)* |
+| `->dashboardWidgets()` | Dashboard widgets: fiscal stats overview + 30-day records chart |
 
 The core fiscal resources (Issuers, Fiscal records, Submissions, System
 events, Audit trail), the Certificates and API panel pages, and the five
 report pages are always registered.
+
+With `->dashboardWidgets()` (or `VERIFACTU_WIDGETS=true`) the panel
+dashboard gains widgets — modular like the plugin itself, so every ACTIVE
+module contributes its own: the fiscal pulse always (records today,
+accepted this month with a 7-day sparkline, rejections and
+awaiting-submission linking straight to the records list, plus a 30-day
+line chart by outcome); with `->documents()`, the billing pulse (euros
+billed today bcmath-summed with credit notes subtracting themselves,
+documents completed, credit notes this month, open drafts); with
+`->face()`, the public-sector view (registered this month, marked as paid
+by the administration, rejections to resend); and with `->repairs()`, the
+workshop counter (in progress, ready for pickup, delivered this month).
+Everything aggregates across every issuer and auto-refreshes.
 
 The **API sidecar** is activated independently, via config/env
 (`VERIFACTU_API=true`), not through the fluent `->api()` call: it is meant
@@ -295,7 +309,7 @@ VERIFACTU_API=true
 ## Authorization
 
 Every panel action — completing, voiding, sending to FACe, uploading
-certificates, generating API keys, all 44 of them — is gated through
+certificates, generating API keys, all 43 of them — is gated through
 `VerifactuGate`, resolved in three layers, **most specific first and
 permissive by default** (a drop-in install shows everything):
 
@@ -336,7 +350,7 @@ permissive by default** (a drop-in install shows everything):
    'permissions' => [
        'void-document' => false,   // nobody voids from the panel
        'query-aeat' => true,
-       // ... all 39 keys ship in the published config, grouped by domain
+       // ... all 38 keys ship in the published config, grouped by domain
    ],
    ```
 
@@ -389,7 +403,6 @@ guidance stays visible to everyone.
 | `query-aeat` | The AEAT read-back (quick status and detailed modal) |
 | `view-qr` | Viewing and downloading the tributary QR |
 | **Templates & SAT** | |
-| `manage-templates` | Opening the template designer |
 | `transition-repair` | Moving a repair order through its lifecycle |
 | `deliver-repair` | Delivering (which issues the fiscal document) |
 | `print-repair-paper` | Deposit receipt and repair report printing |
