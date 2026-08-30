@@ -6,6 +6,11 @@
         alt="Filament Spanish fiscal compliance for Filament v5"
         width="100%"
     >
+    <img
+        src="/assets/certificados-resource.jpeg"
+        alt="Certificates management — per-issuer and global social-collaborator certificates"
+        width="100%"
+    >
 </p>
 
 Official documentation for
