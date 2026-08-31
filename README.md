@@ -71,10 +71,20 @@ territories) their own TicketBAI regulation.
   per-line returns, per-line and general discounts, IRPF withholding,
   hospitality pre-bills and kitchen routing, and SAT repair orders (with a
   customer-facing tracking QR) that fiscalize on delivery.
-- **Prints**: A4 with automatic draft/copy watermarking, and 14 kinds of
-  ESC/POS thermal ticket — including a paired **Print Agent** add-on
+- **Prints**: A4 sheets and 80/58 mm roll tickets that are the exact
+  layout designed in the template designer — every template field (logo,
+  colours, texts, labels, watermark text or image with its geometry, legal
+  legend, QR) reaches the paper, on screen and on PDF alike — through the
+  PDF engine you choose (`->mpdf()`, a bundled pure-PHP engine with nothing
+  to install, or `->gotenbergPdf()` for hosts with Docker; nothing is
+  assumed), with automatic draft/copy watermarking, an in-panel preview of
+  the printed document, and 14 kinds of ESC/POS thermal ticket — including a paired **Print Agent** add-on
   (Windows service installer generated from the panel) for hosts that can't
-  talk to a receipt printer directly from the browser. The tributary QR can
+  talk to a receipt printer directly from the browser. Each ticket
+  variant carries its own template message — the gift receipt's "no
+  purchase value" line (printed bold, so a price-less print never passes
+  for a sale), the return receipt's note and the gift voucher's terms —
+  with sensible defaults when left blank. The tributary QR can
   also be inspected on screen, with a live self-check of its URL against
   the record and the issuer environment (sandbox/production drift is
   flagged before it ever reaches paper).
@@ -89,7 +99,8 @@ territories) their own TicketBAI regulation.
   also be generated **signed or unsigned** for external inspection, an
   existing paper/PDF invoice can be transcribed by OCR into a standalone
   Facturae (amounts copied literally, never recomputed), and every
-  delivered XML stays inspectable pretty-printed from the history. It also
+  Facturae stays inspectable pretty-printed in the panel — the delivered
+  signed XML from the history, or an unsigned build right from the invoice. It also
   offers OCR-assisted drafting from a photo via
   [Laravel AI](https://laravel.com/docs/13.x/ai-sdk) — the host picks any
   provider they already hold a key for, never locked to one.
@@ -103,7 +114,7 @@ territories) their own TicketBAI regulation.
   rejected records in bulk.
 - **Gates every panel action behind a configurable authorization system**
   (see [Authorization](#authorization)) — everything enabled by default,
-  each of the 38 abilities switchable globally or per user.
+  each of the 41 abilities switchable globally or per user.
 - **Drafts Modelos 303, 347, 349 (real E/S classification from each
   record's own data), 111 and 115** for the accountant, each exportable
   as CSV.
@@ -160,11 +171,14 @@ credentials as http-basic auth from your secrets instead:
 composer config http-basic.filament-verifactu.composer.sh your@email.com YOUR-LICENSE-KEY
 ```
 
-**3. Migrate:**
+**3. Install:**
 
 ```bash
-php artisan migrate
+php artisan filament-verifactu:install
 ```
+
+It publishes the config and offers to run the migrations (`php artisan
+migrate` by hand works exactly the same).
 
 Register the plugin on your panel provider:
 
@@ -176,9 +190,13 @@ public function panel(Panel $panel): Panel
     return $panel
         ->plugin(
             VerifactuPlugin::make()
+                // Who you are, as the implementer — travels in every record (AEAT and foral)
+                ->computerSystem(vendorName: 'Your Company SL', vendorNif: 'B00000000', name: 'Your ERP', version: '1.0')
+                ->ticketBai(developerNif: 'B00000000', licenses: ['gipuzkoa' => 'TBAIGIP…'])
                 ->documents()
                 ->repairs()
-                ->gotenbergPdf('http://gotenberg:8')
+                ->mpdf()                               // or ->gotenbergPdf('http://gotenberg:8')
+                ->brandingDisk('public')               // where template logos/watermarks live: any disk of yours
                 ->escPos()
                 ->face()
                 //->einvoincing() See Configuration below for details.
@@ -187,6 +205,10 @@ public function panel(Panel $panel): Panel
         );
 }
 ```
+
+Everything in that snippet can also be set through `.env` or the published
+config — the fluent calls simply win when present, so a host never has to
+publish the config to get going.
 
 Publish and fill in the config:
 
@@ -203,19 +225,26 @@ the first submission — see [Configuration](#configuration).
 | --- | --- |
 | `->documents()` | Document, series-format and template resources, the document lifecycle |
 | `->repairs()` | SAT repair order resource |
-| `->gotenbergPdf($url)` | A4 PDF rendering via a Gotenberg instance |
+| `->mpdf()` | PDFs through the bundled pure-PHP engine — nothing to install, no Docker |
+| `->gotenbergPdf($url)` | PDFs through a Gotenberg instance (Docker, best fidelity, same layout) |
+| `->pdfDriver(Class::class)` | Your own `Printing\Contracts\PdfConverter` implementation |
+| `->brandingDisk($disk, $visibility = null)` | The filesystem disk template logos and watermark images are stored on and read from (`public` unless told otherwise — any disk of your `config/filesystems.php`: local, s3, minio…) |
+| `->computerSystem(...)` | The implementer identity for AEAT records (vendor name/NIF, product name/id/version, installation number) |
+| `->ticketBai(...)` | The implementer identity for TicketBAI (developer NIF, product) and the **software-guarantor licences per territory** — the vendor's, never the customer's |
 | `->escPos()` | Thermal ticket printing |
 | `->printAgent()` | Print agent pairing page and installer generation |
 | `->einvoincing()` | Pending BOE publication of the Orden Ministerial (Ley Crea y Crece / RD 238/2026) |
 | `->face()` | FACe: the "Send to FACe" action, history, settings, generate and directory pages |
 | `->faceb2b()` | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
 | `->ocr()` | The "Create from photo" OCR-assisted draft action and its settings page |
-| `->api()` | *(informational — see below)* |
+| `->api()` | The API panel page (endpoints, per-issuer bearer keys, first call); the sidecar itself is a config toggle — see below |
 | `->dashboardWidgets()` | Dashboard widgets: fiscal stats overview + 30-day records chart |
 
 The core fiscal resources (Issuers, Fiscal records, Submissions, System
-events, Audit trail), the Certificates and API panel pages, and the five
-report pages are always registered.
+events, Audit trail), the Certificates page and the five report pages are
+always registered. PDF generation is an opt-in like every other surface:
+without `->mpdf()`, `->gotenbergPdf()` or `VERIFACTU_PDF_DRIVER`, the
+PDF, email and ZIP actions stay hidden.
 
 With `->dashboardWidgets()` (or `VERIFACTU_WIDGETS=true`) the panel
 dashboard gains widgets — modular like the plugin itself, so every ACTIVE
@@ -250,12 +279,25 @@ VERIFACTU_SYSTEM_VERSION=1.0
 VERIFACTU_INSTALLATION_NUMBER=1
 
 # TicketBAI implementer identity (Araba/Bizkaia/Gipuzkoa only) — the foral
-# equivalent of the ComputerSystem block above. The per-issuer software-
-# guarantor license itself is NOT here: it's set per issuer from the
-# Verifactu settings page (Issuer::tbai_license).
+# equivalent of the ComputerSystem block above, plus the software-guarantor
+# licences. The licences are issued BY EACH FORAL TREASURY TO THE SOFTWARE
+# VENDOR when it registers as "software garante" — they are yours, not the
+# customer's: an issuer is activated without typing any of them. (An
+# issuer-level Issuer::tbai_license, when set, overrides the territory one
+# — for a host that registered as garante itself.)
 VERIFACTU_TBAI_DEVELOPER_NIF=
 VERIFACTU_TBAI_SYSTEM_NAME="Komma Verifactu"
 VERIFACTU_TBAI_SYSTEM_VERSION=1.0
+VERIFACTU_TBAI_LICENSE_ARABA=
+VERIFACTU_TBAI_LICENSE_BIZKAIA=
+VERIFACTU_TBAI_LICENSE_GIPUZKOA=
+
+# Template branding storage (logos, watermark images). One disk for uploads
+# and for rendering; any disk of your config/filesystems.php. Filament v5
+# uploads to the app's default disk (private `local` on a fresh Laravel)
+# unless told otherwise — this setting is what keeps both sides aligned.
+VERIFACTU_BRANDING_DISK=public
+VERIFACTU_BRANDING_VISIBILITY=        # empty = the disk's own default; public | private
 
 # Submission pipeline
 VERIFACTU_QUEUE=verifactu
@@ -274,8 +316,10 @@ VERIFACTU_AEAT_QUERY_SANDBOX=https://prewww1.aeat.es
 VERIFACTU_AEAT_QUERY_PRODUCTION=https://www1.agenciatributaria.gob.es
 VERIFACTU_AEAT_QUERY_PATH=/wlpl/TIKE-CONT/ws/SistemaFacturacion/ConsultaSOAP
 
-# PDF rendering
-VERIFACTU_PDF_DRIVER=gotenberg
+# PDF rendering — an explicit choice. mpdf: bundled pure-PHP engine, nothing
+# to install. gotenberg: Chromium over HTTP (Docker), best fidelity. Or the
+# FQCN of your own PdfConverter. Unset = PDF disabled (actions hidden).
+VERIFACTU_PDF_DRIVER=mpdf
 GOTENBERG_URL=http://gotenberg:8
 
 # ESC/POS printing, print agent
@@ -297,7 +341,8 @@ VERIFACTU_FACE_TSA_PASSWORD=
 
 # OCR-assisted drafting (module toggle only — the provider itself, model
 # and enabled flag are all set from OcrSettingsPage; any Laravel AI
-# provider works, the host supplies its own key in their own config/ai.php)
+# provider works, the host supplies its own key in their own config/ai.php
+# or stores it encrypted on that page)
 VERIFACTU_OCR=true
 
 # Documents, repairs, on-prem API sidecar
@@ -309,7 +354,7 @@ VERIFACTU_API=true
 ## Authorization
 
 Every panel action — completing, voiding, sending to FACe, uploading
-certificates, generating API keys, all 43 of them — is gated through
+certificates, generating API keys, all 41 of them — is gated through
 `VerifactuGate`, resolved in three layers, **most specific first and
 permissive by default** (a drop-in install shows everything):
 
@@ -350,7 +395,7 @@ permissive by default** (a drop-in install shows everything):
    'permissions' => [
        'void-document' => false,   // nobody voids from the panel
        'query-aeat' => true,
-       // ... all 38 keys ship in the published config, grouped by domain
+       // ... all 41 keys ship in the published config, grouped by domain
    ],
    ```
 
@@ -369,6 +414,7 @@ guidance stays visible to everyone.
 | `create-from-photo` | OCR-assisted draft from a photo |
 | `merge-into-invoice` | Merging delivery notes into one invoice (bulk) |
 | `void-document` | Credit notes / cancellations |
+| `delete-draft` | Deleting a draft or pre-billed document (single and bulk) — completed and voided documents can never be deleted, the model refuses regardless of the UI |
 | `reprint-ticket` | Thermal reprint (the COPIA-marked duplicate) |
 | `send-by-email` | Emailing the document PDF |
 | `download-document` | PDF and HTML downloads of a document |
@@ -390,7 +436,7 @@ guidance stays visible to everyone.
 | `create-issuer` | Creating an issuer from auxiliary screens |
 | `activate-fiscal` | The sealed, irreversible fiscal activation |
 | `switch-to-verifactu` | The one-way non-Verifactu → VERI\*FACTU switch |
-| `edit-tbai-settings` | TicketBAI license and territory settings |
+| `edit-tbai-settings` | TicketBAI territory settings (Bizkaia self-employed flag, advanced licence override) |
 | `remit-on-demand` | The non-Verifactu voluntary/requirement remission |
 | `upload-certificate` | Uploading an issuer certificate |
 | `remove-certificate` | Removing an issuer certificate |
@@ -403,6 +449,8 @@ guidance stays visible to everyone.
 | `query-aeat` | The AEAT read-back (quick status and detailed modal) |
 | `view-qr` | Viewing and downloading the tributary QR |
 | **Templates & SAT** | |
+| `quote-repair` | Issuing the repair quote (Q series) from the order's lines |
+| `decline-repair-quote` | Closing a quoted order as declined, optionally charging the diagnostic fee |
 | `transition-repair` | Moving a repair order through its lifecycle |
 | `deliver-repair` | Delivering (which issues the fiscal document) |
 | `print-repair-paper` | Deposit receipt and repair report printing |
@@ -430,6 +478,27 @@ permissions.
   `{PREFIX}{YEAR}{STORE}{TERMINAL}` (default prefixes Q·PE·A·P·F·T·R);
   changing a format resolves to a different series string going forward —
   the previous series stays closed with its numbering intact.
+- The document flow only moves forward: quote → order · delivery note ·
+  proforma · invoice; order → delivery note · proforma · invoice; delivery
+  note → proforma · invoice; proforma → invoice. A **ticket is never a
+  conversion target** — it is born at the point of sale. Conversions and
+  merges carry everything: general discount, withholding, price mode
+  (tax-inclusive or not), the shipping block and, per line, discount, IRPF,
+  surcharge, kitchen zone, traceability and the host product link; a
+  credit note rectifies the invoice **at the invoice's own terms**, so the
+  credited amount is the amount that was charged.
+- Repairs (SAT) are a node of that same flow: an order can issue a repair
+  quote (Q), and delivery opens the ticket/invoice **descending from that
+  quote** (parent + source documents), with the device IMEI/serial as line
+  traceability. Every document born from a repair shows its order.
+- Documents carry a **shipping block** (carrier, tracking number, packages,
+  weight) and **per-line traceability** (serial numbers, batch, expiry) —
+  printed as written, never part of the fiscal record.
+- The chain check (`verifactu:validate-chain`, `GET /chain/verify`)
+  verifies both the **link** (each `previous_hash`) and the **content**
+  (every AEAT record's hash recomputed from its stored fields with the AEAT
+  formula); a record altered straight in the database with its hash left in
+  place is reported as `reason: content`.
 - The Facturae seller block resolves **per issuer**: NIF and legal name
   always come from the issuer; its fiscal address wins when filled, the
   installation-wide one from the Facturae settings is the fallback — the
@@ -522,9 +591,11 @@ Sociedades Normas Forales):
 - The **TBAI identifier + QR** on every invoice and the **chaining by the
   previous invoice's own signature value** (not by hash, as AEAT chains) →
   `QrRenderer` and the TicketBAI fingerprint in `RecordService`.
-- The **software-guarantor license** each foral treasury issues per
-  registered software → stored per issuer (`Issuer::tbai_license`),
-  editable from the Verifactu settings page.
+- The **software-guarantor licence** each foral treasury issues to the
+  registered software vendor → configured per territory at installation
+  level (`VERIFACTU_TBAI_LICENSE_*` or `->ticketBai(licenses: [...])`);
+  the customer activating an issuer never types it. `Issuer::tbai_license`
+  remains as an advanced per-issuer override.
 
 Facturae / FACe / FACeB2B:
 
@@ -564,10 +635,15 @@ Facturae / FACe / FACeB2B:
 
 Every screen this plugin adds is dark-mode aware out of the box — hooks
 into Filament's own light/dark toggle with no configuration needed. The
-panel itself ships in Spanish, Galician and Portuguese
-(`resources/lang/{es,gl,pt}.json`) alongside English, and resolves
+panel itself ships in Spanish, Galician, Catalan, Basque and Portuguese
+(`resources/lang/{es,gl,ca,eu,pt}.json`) alongside English, and resolves
 against your own application's `resources/lang/{locale}.json` too if you
-add translations there.
+add translations there. Language and regime are independent: a Catalan
+business is common territory (AEAT / VERI\*FACTU) in Catalan; a Basque one
+is TicketBAI in Basque or Spanish.
+
+Every form field with rules validates the moment you leave it, with the
+field's own messages — a wrong NIF is flagged before the submit.
 
 ## Usage
 
@@ -624,7 +700,8 @@ $issuer->activateFiscal(FiscalRegime::Aeat, FiscalMode::NonVerifactu);
 // Araba, Bizkaia or Gipuzkoa (TicketBAI) instead — VERI*FACTU mode does
 // not exist there, only NonVerifactu is valid:
 // $issuer->activateFiscal(FiscalRegime::Araba, FiscalMode::NonVerifactu);
-// $issuer->update(['tbai_license' => 'the software-guarantor license the foral treasury issued you']);
+// The software-guarantor licence is the VENDOR's, configured once per territory
+// (VERIFACTU_TBAI_LICENSE_ARABA or ->ticketBai(licenses: [...])) — nothing per issuer.
 ```
 
 Upload the issuer's certificate once (`CertificateService::store()`, the
@@ -767,9 +844,32 @@ Authorization: Bearer vf_...
 ```
 
 ```
-GET /api/v1/verifactu/records/{id}/qr
+GET /api/v1/verifactu/records/{id}/qr?size=300&module=5
 Authorization: Bearer vf_...
 ```
+
+Everything a POS needs to put the tributary QR on its own ticket, in
+whichever form its printer consumes:
+
+```json
+{
+  "invoice_number": "T2026-0001", "status": "accepted", "hash": "…",
+  "url": "https://…",
+  "regime": "aeat",
+  "legend": "Factura verificable en la sede electrónica de la AEAT / VERI*FACTU",
+  "ticketbai_identifier": null,
+  "csv": "…",
+  "svg": "<svg …>",
+  "png_base64": "…",
+  "escpos_base64": "…"
+}
+```
+
+`legend` is present in VERI\*FACTU mode (AEAT non-Verifactu prints the QR
+alone, as the Orden requires); for a foral issuer `legend` is null and
+`ticketbai_identifier` carries the 39-character identifier that must be
+printed on the invoice. `escpos_base64` is the native ESC/POS QR block,
+sent as-is to the printer port; `png_base64` fits any other driver.
 
 For a TicketBAI issuer specifically, correcting an already-registered
 invoice's data (Zuzendu — Araba/Gipuzkoa only, Bizkaia does not implement
@@ -846,6 +946,51 @@ Content-Type: application/json
 }
 ```
 
+## Printed papers and templates
+
+Document templates (A4 and thermal, per issuer or global — the most
+specific wins: issuer + type, then issuer default, then global) and SAT
+templates (deposit receipt and repair report) are designed live in the
+panel, and **what the designer shows is exactly what prints**: every field
+— logo, colours, header texts and HTML blocks, footer notes, column
+labels, legal legend and QR toggles, the watermark (text or image, with
+opacity, size and rotation), the SAT title, custody clause, warranty text
+and signature/tracking toggles — reaches the on-screen preview, the PDF
+and the ESC/POS ticket. The regime is respected on every output: AEAT
+VERI\*FACTU prints the QR with its legend and CSV, AEAT non-Verifactu the
+QR alone, TicketBAI the 39-character identifier and the foral QR.
+
+Logos and watermark images are stored on the **branding disk**
+(`->brandingDisk()` / `VERIFACTU_BRANDING_DISK`, `public` by default —
+any disk of yours) and travel inside the rendered HTML as data URIs, so
+neither PDF engine ever needs to reach your disks by URL.
+
+PDFs are the document as previewed: an A4 sheet for invoices, quotes and
+the rest, and a **roll-width page (80 or 58 mm, as tall as the content)**
+for tickets. Two engines, one layout: `->mpdf()` (bundled, pure PHP) or
+`->gotenbergPdf()` (Chromium, Docker). The only engine-specific limit:
+mPDF does not rotate *image* watermarks (text watermarks rotate on both);
+Gotenberg honours the configured rotation.
+
+## OCR: drafting from a photo or PDF
+
+With `->ocr()`, Invoices & documents gains **Create from photo**: upload a
+photo or a PDF and the AI provider you picked in *OCR settings* transcribes
+it into a pre-filled draft. Any [Laravel AI](https://laravel.com/docs/13.x/ai-sdk)
+provider works (OpenAI, Anthropic, Gemini, …) — you choose the provider and
+model there, and the key comes from your own `config/ai.php`/`.env` or is
+stored encrypted on that page.
+
+Fiscal data is never guessed. The reading is only turned into a draft when
+the lines the model read add up to the total printed on the paper — as net
+prices plus tax, or as tax-inclusive prices (receipts often print them
+that way), within a cent per line of rounding. Otherwise nothing is
+created and the error says what did not reconcile. PDFs are sent as
+documents (not as images), transient provider conditions (overloaded, rate
+limited) are retried, and a failure is always reported in the panel.
+Gemini 2.0 Flash tends to answer "overloaded" at peak hours; if it keeps
+failing, switch the model or the provider in *OCR settings*.
+
 ## FACe and FACeB2B lifecycle
 
 Beyond sending, this plugin keeps a full FACe history: **download**
@@ -909,8 +1054,17 @@ gives back, so there is nothing later to be notified about.
 
 ## Notifying customers on repair status changes
 
+The repair lifecycle now has its quote branch: from received or
+diagnosing, **Issue quote** turns the order's parts/labour lines into a
+completed Q-series document (numbered, never fiscalized) and parks the
+order in "quoted"; accepting means moving it on to parts or repairing;
+**Decline quote** closes it as rejected, returning the device unrepaired,
+with an optional diagnostic fee fiscalized on the spot as a simplified
+invoice through the single gate.
+
 Every transition on a repair order (`RepairService::transition()`,
-including the initial "received" and the final "delivered") fires
+including the initial "received", "quoted"/"rejected", and the final
+"delivered") fires
 `Komma\Verifactu\Documents\Events\RepairStatusChanged` — listen for it to
 send an SMS/email/WhatsApp yourself; this plugin only builds the tracking
 page behind each order's own QR (`RepairOrder::tracking_token`), it never
@@ -947,6 +1101,23 @@ are built and wired into the panel; the full receiver-side lifecycle
 signatures) is implemented at the service/facade layer but has no dedicated
 panel screen yet for browsing invoices this issuer has received.
 
+**Document module over the API** for external POS/ERP terminals that want
+this plugin to number, fiscalize and render their documents (create a
+draft with lines, complete it, fetch the PDF) — today the sidecar assumes
+the terminal owns its numbering and only needs the fiscal record and the
+QR.
+
+**Received-invoices ledger** (purchase invoices, OCR-fed), so Modelo 303's
+input VAT (soportado) can be derived instead of typed.
+
+**Navarra (NaTicket)**: the Comunidad Foral has its own treasury and
+neither VERI\*FACTU nor TicketBAI apply there. Its own system, NaTicket,
+is being developed by the Hacienda Foral de Navarra (fraud plan
+2025-2027) with no technical specification or mandatory calendar published
+yet; it will join as a fourth `FiscalRegime` with its own driver when it
+is. A Navarrese business selling in common territory already uses this
+plugin's AEAT engine for those operations.
+
 ## Scope
 
 TicketBAI's Zuzendu (subsanación) is not implemented for Bizkaia — its own
@@ -975,18 +1146,21 @@ decision.
 composer test
 ```
 
-The suite ships with the package — 177 tests covering the chained hash
+The suite ships with the package — 203 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
 envelopes), Facturae validation, the FACe/FACeB2B lifecycles, the API
-sidecar, document totals in bcmath, and the printing pipeline. Run it
-after installing to verify your environment.
+sidecar, document totals in bcmath, the printing pipeline, template
+fidelity (every template field reaching the paper), field-complete
+conversions and credit notes, chain content tampering, OCR reconciliation
+and the repair lineage. Run it after installing to verify your environment.
 
 Run the local homologation battery against a disposable sandbox issuer
 before going live:
 
 ```bash
+php artisan verifactu:query-records B12345678 --last=10   # ask the AEAT what it holds, hash-checked
 php artisan verifactu:homologate                    # AEAT
 php artisan verifactu:homologate --submit           # also attempts a real AEAT sandbox round-trip, if a certificate is present
 php artisan verifactu:homologate-tbai                       # TicketBAI, Araba by default
