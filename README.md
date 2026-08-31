@@ -123,6 +123,32 @@ Every surface beyond the core fiscal resources ships **disabled by
 default** — a host that registers only the plugin object gets the fiscal
 chain and nothing else; every other module is a fluent opt-in.
 
+## Screenshots
+
+<p align="center">
+    <img src="/assets/02-documents.png" alt="Invoices & documents — list with actions" width="100%">
+</p>
+<p align="center">
+    <img src="/assets/03-document-preview.png" alt="Document preview — A4 with tributary QR and legend" width="49%">
+    <img src="/assets/04-ticket-preview.png" alt="Ticket preview — 80 mm roll with QR" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/05-template-designer.png" alt="Template designer — live A4 preview" width="49%">
+    <img src="/assets/06-template-designer-ticket.png" alt="Template designer — live thermal preview" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/07-fiscal-records.png" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
+    <img src="/assets/08-qr-modal.png" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/09-activation.png" alt="Sealed fiscal activation — regime and mode" width="49%">
+    <img src="/assets/10-repair-order.png" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/11-face-history.png" alt="FACe history — registry numbers and lifecycle" width="49%">
+    <img src="/assets/12-model-303.png" alt="Modelo 303 draft" width="49%">
+</p>
+
 ## Requirements
 
 - PHP >= 8.4
@@ -991,6 +1017,39 @@ limited) are retried, and a failure is always reported in the panel.
 Gemini 2.0 Flash tends to answer "overloaded" at peak hours; if it keeps
 failing, switch the model or the provider in *OCR settings*.
 
+## Print Agent (thermal printing from the cloud)
+
+Hosts on a local server usually print ESC/POS straight to the receipt
+printer (IP:port, a Windows share or `/dev/usb/lp0`) — nothing to install.
+Hosts that cannot reach the till from the browser (cloud installs, tablets)
+enable `->printAgent()` and pair a small Windows service that sits next to
+the printer:
+
+1. In *Print agent*, pick the issuer and the printer address and download
+   the installer. It is a `.bat` generated for that terminal, with a
+   pairing token minted for the issuer.
+2. Run it on the till PC. It installs `pos-agent.exe` as a Windows service
+   (through `nssm.exe`), authenticates back to the panel and starts a
+   heartbeat — the page shows the agent online.
+3. From then on every ticket, kitchen order or Z report the panel prints is
+   broadcast to the agent (`PrintJobDispatched` on a private channel), which
+   pushes the raw ESC/POS bytes to the paired printer. *Test print* sends a
+   real ticket with logo and cut.
+
+The agent listens over websockets, so the host needs a **broadcasting
+connection**: Laravel Reverb or Pusher configured under
+`broadcasting.connections.pusher` (the installer preview on the page shows
+the `PUSHER_HOST/PORT/SCHEME/KEY` it will write on the terminal — if they
+are empty, broadcasting is not configured yet). The page's own *How does
+it work?* and *Windows installation guide* walk the installer through it.
+
+Both binaries ship inside the package (`downloads/windows/pos-agent.exe`
+and `nssm.exe`) and are served from `/download/windows/{file}`; a host may
+override either by placing its own copy under `public/download/windows/`.
+The agent pairs against `/api/v1/printer-agent` (register · auth ·
+heartbeat · test-print), routes registered unconditionally because they
+are reached without a panel. The uninstaller is generated the same way.
+
 ## FACe and FACeB2B lifecycle
 
 Beyond sending, this plugin keeps a full FACe history: **download**
@@ -1139,6 +1198,47 @@ internally (the single-gate/two-engines design) and — the part that
 matters for selling this — exactly which toggles map to which add-ons,
 and what pricing was actually settled on versus what's still an open
 decision.
+
+## Going to production
+
+What the plugin cannot do for you and the installer must set up once:
+
+1. **Choose the PDF engine** — `->mpdf()` (no infrastructure) or
+   `->gotenbergPdf('http://gotenberg:8')` with a Gotenberg container
+   reachable from PHP. Without one there are no PDFs, by design.
+2. **Queue worker** — AEAT submissions run as queued jobs
+   (`SubmitRecordsJob`, queue `VERIFACTU_QUEUE`, `verifactu` by default).
+   A worker must be running: `php artisan queue:work --queue=verifactu`
+   (or Horizon). TicketBAI does not use the queue.
+3. **Scheduler** — for VERI\*FACTU issuers the continuous remission is
+   `php artisan verifactu:send-pending`; schedule it every few minutes in
+   the host's scheduler (`Schedule::command('verifactu:send-pending')->everyFiveMinutes()`)
+   and make sure the cron that runs `schedule:run` exists. Non-Verifactu
+   issuers never need this: they remit on demand from the panel.
+4. **Disks** — certificates go to `VERIFACTU_CERTIFICATES_DISK` (a private
+   disk; never `public`), template branding to `VERIFACTU_BRANDING_DISK`.
+   Any disk of your `config/filesystems.php` works (local, S3…); the
+   PHP process must be able to read and write both.
+5. **Implementer identity** — `->computerSystem(...)` / `->ticketBai(...)`
+   (or their env variables) with **your** company's data: it travels in
+   every record and is what the responsible declaration names.
+6. **Certificates** — one `.p12` per issuer (or the global
+   social-collaborator one for advisory firms), uploaded from the panel;
+   the passphrase is stored encrypted with the app key, so **back up
+   `APP_KEY`**: without it neither passphrases nor stored API keys can be
+   read.
+7. **Backups** — the tables `verifactu_records`, `verifactu_submissions`
+   and `verifactu_events` are append-only and legally must be kept (four
+   years of prescription). Back them up with the rest of the database;
+   never restore them partially or older than the rest — a restored chain
+   that misses its tail is a broken chain.
+8. **HTTPS** and a real `APP_URL` — the customer repair-tracking page, the
+   print-agent endpoints and the API sidecar are public routes of the host.
+   With `->printAgent()`, also a broadcasting connection (Reverb or Pusher)
+   reachable from the tills: the agent receives its jobs over websockets.
+9. **Run the homologation battery** before the first real submission (see
+   Testing): it proves certificate, identity, chain, signature and QR
+   against the sandbox with your own data.
 
 ## Testing
 
