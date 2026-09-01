@@ -2,7 +2,7 @@
 
 <p align="center">
     <img
-        src="/assets/01.jpg"
+        src="/assets/01.png"
         alt="Filament Spanish fiscal compliance for Filament v5"
         width="100%"
     >
