@@ -38,7 +38,14 @@ plugin is registered, with nothing else enabled:
 
 - Issuers (activation, certificates, API keys)
 - Fiscal records, Submissions, System events, Audit trail
-- The five report drafts (303, 347, 349, 111, 115)
+- The report drafts. Every page registers, and each hides itself from
+  navigation when the install has no issuer it serves, so nobody ever
+  reads another treasury's model numbers: the shared-numbering set (303,
+  347, 349, 115) serves AEAT and the Basque territories alike, the state
+  111 is AEAT-only against the Basque quarterly 110, the 347 hides for a
+  Bizkaia-only install (the LROE replaces it), Navarra has its own foral
+  set (F-69, F-50, foral 349, 715, 759), and the corporate-tax estimate
+  sits alongside them (`RegimesPresent`).
 
 Everything past that is a fluent opt-in on `VerifactuPlugin::make()`:
 
@@ -46,6 +53,7 @@ Everything past that is a fluent opt-in on `VerifactuPlugin::make()`:
 | --- | --- |
 | `->documents()` | The whole document lifecycle (quotes → invoices), templates, series |
 | `->repairs()` | SAT repair orders |
+| `->expenses()` | The received (purchase) side: supplier invoices, tickets and credit notes, OCR capture, attachment preview, and the LROE expenses book for Bizkaia |
 | `->escPos()` | Thermal ticket printing |
 | `->printAgent()` | Print Agent pairing + Windows installer generation |
 | `->face()` | FACe (public-sector einvoicing) |
@@ -97,6 +105,38 @@ etc. (each `has*()` method is already the single place that decides
 whether a module is active — see `src/VerifactuPlugin.php`). That's the
 one seam that would need work if you go down that road; nothing else in
 the codebase assumes anything about licensing today.
+
+## 4b. The received side
+
+The purchase ledger lives in its own tables
+(`verifactu_received_documents` + lines) and never touches the issued
+gate: a received document is not numbered by us, not chained, not
+converted and not printed as ours — the number and the date belong to the
+supplier. What the two sides share is reused without inheritance: the
+arithmetic (`DocumentTotals::computeLines()`, called through
+`ReceivedTotals`) and the OCR.
+
+`ExpenseBooking` is its gate — the mirror of `DocumentGate` minus
+everything that is ours: booking freezes the amounts and stamps the
+moment, and from there the drafts read them. `ExpenseLedger` is the only
+door those drafts use: deductible input VAT per rate (never the whole
+supported quota — the deductible share lives on the document, and a
+reverse-charge purchase deducts nothing), purchases by third party,
+intra-community acquisitions, and the withholding actually practised.
+`ReceivedDocumentType::countsForTax()` is the line between what reaches a
+report (purchase invoice, purchase ticket, supplier credit note) and what
+is only supplier history (quotes, orders, delivery notes, proformas
+received).
+
+For Bizkaia, `LroeExpensesDriver` + `LroeExpensesMapper` submit the LROE's
+received-invoices chapter (Modelo 140 for a self-employed issuer, 240 for
+a company) through the same engine gateway — so both halves of Batuz
+ship, which is why a Bizkaia issuer files no Modelo 347.
+
+`CorporateTaxService` sits on top of both sides: invoiced income (from
+whatever source that issuer's VAT draft already uses) less booked
+purchases, with payroll, depreciation and fiscal adjustments declared by
+the user. It is an estimate and a provisioning tool, never a filing.
 
 ## 5. The document layer
 
@@ -203,7 +243,11 @@ database is what the content check exists for.
   and its TicketBAI branch, `TicketBaiDriver`/`Mapper`, `QrRenderer`,
   `QrUrlCheck`, `FacturaeInvoiceBuilder`); everything else stays
   regime-agnostic.
-- Navarra (NaTicket) will be a fourth `FiscalRegime` with its own driver
-  behind the same gate once a specification exists.
-- Translations: five JSON catalogues (`es, gl, ca, eu, pt`) with the same
-  key order; every new string goes to all five.
+- Navarra is the fourth `FiscalRegime` today: full document lifecycle,
+  foral report numbers (F-69, F-50, 349, 715, 759) computed from
+  completed documents, activation locked and no records chained. Its
+  NaTicket driver plugs in behind the same gate once a specification
+  exists — the TicketBAI-only branches are guarded by
+  `FiscalRegime::usesTicketBai()`, never by "not AEAT".
+- Translations: six JSON catalogues (`en, es, gl, ca, eu, pt`) with the
+  same key order; every new string goes to all six.

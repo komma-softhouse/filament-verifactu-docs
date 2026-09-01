@@ -11,7 +11,9 @@
 Official documentation for
 [Filament Verifactu](https://github.com/komma-softhouse/filament-verifactu),
 a Filament v5 fiscal compliance engine for VERI*FACTU, TicketBAI,
-FACe and FACeB2B.
+FACe and FACeB2B, covering all four Spanish fiscal regimes — AEAT, the
+three TicketBAI territories, and Navarra (foral tax models today,
+NaTicket-ready for when its specification is published).
 
 <p>
     <a href="https://github.com/komma-softhouse/filament-verifactu">
@@ -26,10 +28,14 @@ FACe and FACeB2B.
 VERI\*FACTU / RRSIF and TicketBAI compliant fiscal engine for
 [Filament](https://filamentphp.com) 5.x: chained fiscal records, AEAT and
 foral (Araba/Bizkaia/Gipuzkoa) submission, XAdES signing, a full document
-lifecycle, FACe/FACeB2B electronic invoicing, and fiscal reporting drafts —
-for Spanish businesses that need their invoicing to comply with Real
-Decreto 1007/2023, Orden HAC/1177/2024 and (for the three Basque
-territories) their own TicketBAI regulation.
+lifecycle, FACe/FACeB2B electronic invoicing, and fiscal reporting drafts
+under both the state numbers (303, 347, 349, 111, 115) and the Navarra
+foral ones (F-69, F-50, 349, 715, 759) — for Spanish businesses that need
+their invoicing to comply with Real Decreto 1007/2023, Orden
+HAC/1177/2024, (for the three Basque territories) their own TicketBAI
+regulation, or (for Navarra) the Convenio Económico's own treasury, whose
+antifraud system NaTicket joins as the fourth engine the day its
+specification is published.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/komma-softhouse/filament-verifactu.svg?style=flat-square)](https://packagist.org/packages/komma-softhouse/filament-verifactu)
 [![Tests](https://img.shields.io/github/actions/workflow/status/komma-softhouse/filament-verifactu/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/komma-softhouse/filament-verifactu/actions/workflows/tests.yml)
@@ -58,6 +64,14 @@ territories) their own TicketBAI regulation.
   (rectificativa) invoices, and Zuzendu subsanación (Araba/Gipuzkoa; Bizkaia
   does not implement it). Bizkaia submissions are automatically wrapped in
   the correct Batuz/LROE envelope (Modelo 140 autónomo or 240 sociedad).
+- **Models Navarra as a first-class regime**: neither VERI\*FACTU nor
+  TicketBAI apply in the Comunidad Foral, and its own antifraud system
+  (NaTicket) has no published specification yet — so a Navarrese issuer
+  runs the entire document lifecycle with gapless numbering, prints,
+  reports under the foral model numbers, and simply has no antifraud
+  chain to activate until the NaTicket driver exists. The activation
+  stays locked for this regime by design: nothing is faked, nothing is
+  chained against an unpublished spec.
 - **Signs with XAdES-BES** when an AEAT issuer operates in non-Verifactu
   mode (VERI\*FACTU systems are exempt from signing per art. 16.3 — hash
   only); TicketBAI records are always signed, per its own regulation.
@@ -115,9 +129,33 @@ territories) their own TicketBAI regulation.
 - **Gates every panel action behind a configurable authorization system**
   (see [Authorization](#authorization)) — everything enabled by default,
   each of the 41 abilities switchable globally or per user.
+- **Keeps the received side of the ledger too** (`->expenses()`): purchase
+  invoices, purchase tickets and supplier credit notes, drafted by hand or
+  captured with the same OCR, with the deductible VAT share, the expense
+  category and the IRPF withheld. Booking freezes a purchase exactly as
+  completing freezes a sale — and from that moment the tax drafts read it.
+- **Submits both LROE chapters in Bizkaia**: TicketBAI sends what the
+  business issues, and the expenses book (Modelo 140 for a self-employed
+  issuer, 240 for a company) sends what it receives — which is what makes
+  the Batuz obligation complete, and why a Bizkaia issuer files no 347.
 - **Drafts Modelos 303, 347, 349 (real E/S classification from each
   record's own data), 111 and 115** for the accountant, each exportable
-  as CSV.
+  as CSV — with input VAT, the purchase side of the 347, intra-EU
+  acquisitions and the withholding payees all derived from those booked
+  purchases instead of typed in.
+- **Estimates the corporate income tax and its instalment** from invoiced
+  income less booked purchases, on the 2026 rate scale, with payroll,
+  depreciation and fiscal adjustments declared — a provisioning tool, not
+  a filing. The Basque treasuries keep the same numbering, so a TicketBAI
+  issuer's 303/347/349 drafts read its own chained foral records — with
+  the quarterly 110 as their general payroll model (their 111 is the
+  monthly large-company one) and no 347 in Bizkaia, where the LROE
+  (Batuz) replaces it — the LROE covers income and expenses (models
+  140/240): this plugin submits its issued-sales chapter, the expenses
+  chapters live in your accounting. Navarra issuers get the same drafts
+  under the
+  foral numbers — F-69, F-50, the foral 349, 715 and 759 — read from the
+  completed fiscal documents.
 
 Every surface beyond the core fiscal resources ships **disabled by
 default** — a host that registers only the plugin object gets the fiscal
@@ -146,7 +184,33 @@ chain and nothing else; every other module is a fluent opt-in.
 </p>
 <p align="center">
     <img src="/assets/11-face-history.png" alt="FACe history — registry numbers and lifecycle" width="49%">
-    <img src="/assets/12-model-303.png" alt="Modelo 303 draft" width="49%">
+    <img src="/assets/12-faceb2b.png" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/13-expenses.png" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
+</p>
+<p align="center">
+    <img src="/assets/14-expense-form.png" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
+    <img src="/assets/15-expense-attachment.png" alt="The supporting document, readable from the panel" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/16-expense-ocr.png" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
+    <img src="/assets/17-lroe-expenses.png" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/18-model-303.png" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
+</p>
+<p align="center">
+    <img src="/assets/19-model-347.png" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
+    <img src="/assets/20-withholding-prefill.png" alt="Withholding drafts prefilled from booked purchases" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/21-reports-navigation.png" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
+    <img src="/assets/22-model-f69.png" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
+</p>
+<p align="center">
+    <img src="/assets/23-corporate-tax.png" alt="Corporate income tax estimate and instalment provision" width="49%">
+    <img src="/assets/24-activation-navarra.png" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
 </p>
 
 ## Requirements
@@ -267,8 +331,15 @@ the first submission — see [Configuration](#configuration).
 | `->dashboardWidgets()` | Dashboard widgets: fiscal stats overview + 30-day records chart |
 
 The core fiscal resources (Issuers, Fiscal records, Submissions, System
-events, Audit trail), the Certificates page and the five report pages are
-always registered. PDF generation is an opt-in like every other surface:
+events, Audit trail), the Certificates page and the report pages are
+always registered — and each page hides from navigation when the install
+has no issuer it serves, so nobody ever reads another treasury's model
+numbers. The shared-numbering pages (303, 347, 349, 115) serve AEAT and
+Basque issuers alike, each filing with its own Hacienda; the state 111
+is AEAT-only and the Basque quarterly 110 is its own page; the 347 hides
+for Bizkaia-only installs (the LROE replaces it); and the Navarra foral
+set (F-69, F-50, foral 349, 715, 759) shows only with Navarrese
+issuers. PDF generation is an opt-in like every other surface:
 without `->mpdf()`, `->gotenbergPdf()` or `VERIFACTU_PDF_DRIVER`, the
 PDF, email and ZIP actions stay hidden.
 
@@ -578,6 +649,29 @@ text as of 03/12/2025:
 - Modelo 111/115 default rates verified current as of this build: 15%
   general professional fees, 7% new professionals (first 3 years), 19%
   rent withholding.
+- Basque foral models keep the state numbering, filed with each foral
+  Hacienda: 303 (e.g. Araba's Orden Foral of 2021 approving its own 303),
+  349, and 115 (115-A in Araba). Their general payroll-withholding model
+  is the quarterly 110 (Orden Foral 631/2014 in Gipuzkoa, 104/2014 in
+  Araba); the foral 111 is the monthly large-company variant, out of
+  scope like every monthly filer. In Bizkaia the LROE (Batuz) replaces
+  the Modelo 347 — models 140/240 cover income AND expenses, and this
+  plugin submits both chapters — so the 347 draft refuses and the page
+  hides.
+- Corporate income tax rates for periods started in 2026 (Ley 7/2024,
+  art. 29.1 LIS and transitional provision 44ª): a two-band scale of 19%
+  up to €50,000 and 21% beyond for net turnover under €1M, a flat 23%
+  between €1M and €10M, the 25% general rate, and 15% for newly created
+  entities. Instalments follow art. 40.2 LIS (18% of the quota); the
+  optional art. 40.3 modality is out of scope.
+- Navarra models (Convenio Económico, art. 34: VAT follows the same
+  substantive rules as the state law): F-69 quarterly VAT (Orden Foral
+  280/2006; monthly filers above €6,010,121.04 use F-66, out of scope
+  like the state monthly 303) · F-50 annual third-party operations
+  (Decreto Foral 69/2010, Orden Foral 177/2010 — same €3,005.06
+  threshold) · its own 349 filing · 715 payroll/professional
+  withholding · 759 urban-lease withholding (19%, quarterly; monthly
+  filers use 760, out of scope).
 - Modelo 303's output VAT (devengado) is derived from chained sales
   records; input VAT (soportado) is not tracked by this plugin (it belongs
   to the purchase ledger) and is supplied manually before the result box
@@ -728,6 +822,12 @@ $issuer->activateFiscal(FiscalRegime::Aeat, FiscalMode::NonVerifactu);
 // $issuer->activateFiscal(FiscalRegime::Araba, FiscalMode::NonVerifactu);
 // The software-guarantor licence is the VENDOR's, configured once per territory
 // (VERIFACTU_TBAI_LICENSE_ARABA or ->ticketBai(licenses: [...])) — nothing per issuer.
+
+// Navarra instead: set the regime at creation and do NOT activate —
+// activateFiscal() refuses the regime until NaTicket publishes its
+// specification. The issuer issues numbered documents without a chain,
+// and its report drafts already take the foral numbers:
+// $issuer = Issuer::create(['name' => 'Bodega Iruñea SL', 'nif' => 'B31000001', 'regime' => FiscalRegime::Navarra]);
 ```
 
 Upload the issuer's certificate once (`CertificateService::store()`, the
@@ -1141,6 +1241,55 @@ Event::listen(function (RepairStatusChanged $event) {
 });
 ```
 
+## Navarra: the fourth regime
+
+The Comunidad Foral has its own treasury under the Convenio Económico:
+neither VERI\*FACTU (common territory) nor TicketBAI (Araba, Bizkaia,
+Gipuzkoa) applies to a business whose tax home is Navarra. Its own
+antifraud system, **NaTicket**, is being developed by the Hacienda Foral
+de Navarra under the 2025-2027 fraud plan — with **no technical
+specification, no schemas, no endpoints and no mandatory calendar
+published** at the time of this build.
+
+This plugin models that reality instead of papering over it:
+
+- `FiscalRegime::Navarra` is picked at issuer creation like any other
+  regime. The issuer runs the **entire document lifecycle** — quotes,
+  orders, delivery notes, proformas, invoices, tickets, credit notes, SAT
+  repairs, gapless series numbering, templates, A4 and thermal printing,
+  FACe/FACeB2B — exactly like every other issuer.
+- **Fiscal activation stays locked** for this regime: `activateFiscal()`
+  refuses it, the panel shows the option disabled with the reason, and
+  `RecordService` refuses to chain even a force-sealed Navarra issuer.
+  No record is ever invented against an unpublished spec.
+- **Report drafts take the foral numbers**, computed from the completed
+  fiscal documents (their numbers, customers and lines freeze at
+  completion — the same immutable base the AEAT drafts get from the
+  chained records; credit notes subtract through their negative lines,
+  voided documents drop out):
+
+  | State model | Navarra model | Draft source |
+  |---|---|---|
+  | 303 (quarterly VAT) | **F-69** (monthly F-66 out of scope, like the state monthly 303) | completed documents |
+  | 347 (third parties) | **F-50** — same €3,005.06 threshold | completed documents |
+  | 349 (intra-EU) | **349**, filed with the Hacienda Foral — lines flagged `E?` to confirm | completed documents |
+  | 111 (payroll/fees withholding) | **715** | manual entries |
+  | 115 (rent withholding) | **759** — urban leases, same 19% default | manual entries |
+
+  Each foral model is its **own page** — nobody ever reads another
+  treasury's numbers: a common-territory install sees only 303/347/349/
+  111/115, a Navarrese install sees only F-69/F-50/349/715/759, and a
+  mixed install sees both sets side by side, each with its issuer select
+  filtered to its own regime.
+- **When the Orden Foral lands**, NaTicket joins as the fourth driver
+  behind the same `RecordService` gate the other engines share — the
+  TicketBAI-only code paths are guarded by
+  `FiscalRegime::usesTicketBai()`, never by "not AEAT", so nothing
+  misroutes in the meantime.
+- A Navarrese business also selling from a common-territory establishment
+  models that as **two issuers** (one AEAT, one Navarra), same as any
+  multi-administration business.
+
 ## Roadmap
 
 **B2B electronic invoicing** (Ley 18/2022 "Crea y Crece", RD 238/2026): the
@@ -1169,13 +1318,18 @@ QR.
 **Received-invoices ledger** (purchase invoices, OCR-fed), so Modelo 303's
 input VAT (soportado) can be derived instead of typed.
 
-**Navarra (NaTicket)**: the Comunidad Foral has its own treasury and
-neither VERI\*FACTU nor TicketBAI apply there. Its own system, NaTicket,
-is being developed by the Hacienda Foral de Navarra (fraud plan
-2025-2027) with no technical specification or mandatory calendar published
-yet; it will join as a fourth `FiscalRegime` with its own driver when it
-is. A Navarrese business selling in common territory already uses this
-plugin's AEAT engine for those operations.
+**SII (Suministro Inmediato de Información)**: near-real-time VAT ledger
+submission for REDEME and large-company issuers — the AEAT flavour and the
+foral ones that exist (Navarra runs its own SII; Bizkaia's ledger duty is
+already Batuz/LROE, which this plugin submits today). The issued-invoices
+ledger is derivable from the chained records now; the received side waits
+on the received-invoices ledger above, so `->sii()` ships after it.
+
+**NaTicket engine**: everything around it already ships — see
+[Navarra: the fourth regime](#navarra-the-fourth-regime). The driver
+itself joins behind the same `RecordService` gate the moment the Hacienda
+Foral de Navarra publishes the technical specification; nothing is built
+against an unpublished spec.
 
 ## Scope
 
@@ -1246,7 +1400,7 @@ What the plugin cannot do for you and the installer must set up once:
 composer test
 ```
 
-The suite ships with the package — 203 tests covering the chained hash
+The suite ships with the package — 230 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
@@ -1266,6 +1420,56 @@ php artisan verifactu:homologate --submit           # also attempts a real AEAT 
 php artisan verifactu:homologate-tbai                       # TicketBAI, Araba by default
 php artisan verifactu:homologate-tbai --territory=bizkaia    # or --territory=gipuzkoa
 ```
+
+## Gotchas worth knowing before you hit them
+
+Hard-won, all of them from building this against real panels and real
+printers:
+
+- **Filament v5 uploads to the app's default disk** (`FILESYSTEM_DISK`,
+  the private `local` on a fresh Laravel). Anything that later reads the
+  file must use that same disk: branding through `BrandingDisk`,
+  certificates through `certificates.disk`, expense attachments through
+  the panel's disk.
+- **Livewire temporary uploads**: `TemporaryUploadedFile` hands Symfony an
+  empty tmpfile as pathname, so `getContent()` returns zero bytes. Read
+  them with `$file->get()` — that is what `OcrAttachment` does.
+- **Blade directives glued to a word** (`kg@endif`) are never compiled
+  (`\B@`). Leave a space.
+- **Filament rule closures** are evaluated with injection, so a
+  Laravel-style `function (string $attribute, $value, Closure $fail)` must
+  be wrapped: `->rule(fn (): Closure => function (...) {...})`.
+- **Livewire cannot hold plain objects** as public properties — the report
+  DTOs implement `Wireable` for exactly that reason.
+- **A table `SelectFilter` wants a plain `value => label` array**, unlike a
+  form `Select`, which takes the enum class itself.
+- **Infolist action groups live in `Filament\Schemas\Components\Actions`**
+  in v5; the infolists namespace no longer has them.
+- **A toggleable column remembers the user's choice**, so a column that
+  ships hidden stays hidden for anyone who already opened the page. If it
+  must always be visible (the issuer on a multi-company table), do not make
+  it toggleable.
+- **mPDF**: no `position: fixed` (the footer goes through `SetHTMLFooter`,
+  and any `@page` rule wipes it — the driver strips it first); no `div`
+  with border or height inside table cells; raster watermarks are prepared
+  with GD (cover, scale, rotate); SVG watermarks cannot be rotated.
+- **Gotenberg**: send `printBackground`, and `singlePage` + `paperWidth`
+  for the roll-width ticket page.
+- **PHP's 30 s request budget** kills long OCR calls: the services raise
+  it, pass an explicit timeout to Laravel AI and retry on provider
+  overload.
+- **`ActionGroup` visibility on view pages** is evaluated before the record
+  is bound: take `?Model $record` and fall back to
+  `$livewire->getRecord()`.
+- **Customer tracking and print-agent routes register unconditionally**:
+  they are reached without a panel, so fluent toggles cannot gate them.
+- **Demo seeding is incremental** — `db:seed --class=VerifactuDemoSeeder`
+  adds only what is missing. Never `migrate:fresh` a database that has
+  been used: fiscal chains are append-only.
+- **The plugin and the AEAT engine share the PSR-4 root
+  `Komma\Verifactu\`** across two `src/` directories. Never add
+  `Models\Model`, `Models\ComputerSystem`, `Services\AeatClient` or
+  `Exceptions\*` to the plugin — they would shadow the engine silently.
 
 ## Changelog
 
