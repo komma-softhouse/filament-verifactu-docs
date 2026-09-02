@@ -171,6 +171,9 @@ chain and nothing else; every other module is a fluent opt-in.
     <img src="assets/04-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="49%">
 </p>
 <p align="center">
+    <img src="assets/04-01-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="100%">
+</p>
+<p align="center">
     <img src="assets/05-template-designer.jpeg" alt="Template designer — live A4 preview" width="49%">
     <img src="assets/06-template-designer-ticket.jpeg" alt="Template designer — live thermal preview" width="49%">
 </p>
