@@ -164,53 +164,53 @@ chain and nothing else; every other module is a fluent opt-in.
 ## Screenshots
 
 <p align="center">
-    <img src="assets/02-documents.png" alt="Invoices & documents — list with actions" width="100%">
+    <img src="assets/02-documents.jpeg" alt="Invoices & documents — list with actions" width="100%">
 </p>
 <p align="center">
-    <img src="assets/03-document-preview.png" alt="Document preview — A4 with tributary QR and legend" width="49%">
-    <img src="assets/04-ticket-preview.png" alt="Ticket preview — 80 mm roll with QR" width="49%">
+    <img src="assets/03-document-preview.jpeg" alt="Document preview — A4 with tributary QR and legend" width="49%">
+    <img src="assets/04-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="49%">
 </p>
 <p align="center">
-    <img src="assets/05-template-designer.png" alt="Template designer — live A4 preview" width="49%">
-    <img src="assets/06-template-designer-ticket.png" alt="Template designer — live thermal preview" width="49%">
+    <img src="assets/05-template-designer.jpeg" alt="Template designer — live A4 preview" width="49%">
+    <img src="assets/06-template-designer-ticket.jpeg" alt="Template designer — live thermal preview" width="49%">
 </p>
 <p align="center">
-    <img src="assets/07-fiscal-records.png" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
-    <img src="assets/08-qr-modal.png" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
+    <img src="assets/07-fiscal-records.jpeg" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
+    <img src="assets/08-qr-modal.jpeg" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
 </p>
 <p align="center">
-    <img src="assets/09-activation.png" alt="Sealed fiscal activation — regime and mode" width="49%">
-    <img src="assets/10-repair-order.png" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
+    <img src="assets/09-activation.jpeg" alt="Sealed fiscal activation — regime and mode" width="49%">
+    <img src="assets/10-repair-order.jpeg" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
 </p>
 <p align="center">
-    <img src="assets/11-face-history.png" alt="FACe history — registry numbers and lifecycle" width="49%">
-    <img src="assets/12-faceb2b.png" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
+    <img src="assets/11-face-history.jpeg" alt="FACe history — registry numbers and lifecycle" width="49%">
+    <img src="assets/12-faceb2b.jpeg" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
 </p>
 <p align="center">
-    <img src="assets/13-expenses.png" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
+    <img src="assets/13-expenses.jpeg" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
 </p>
 <p align="center">
-    <img src="assets/14-expense-form.png" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
-    <img src="assets/15-expense-attachment.png" alt="The supporting document, readable from the panel" width="49%">
+    <img src="assets/14-expense-form.jpeg" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
+    <img src="assets/15-expense-attachment.jpeg" alt="The supporting document, readable from the panel" width="49%">
 </p>
 <p align="center">
-    <img src="assets/16-expense-ocr.png" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
-    <img src="assets/17-lroe-expenses.png" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
+    <img src="assets/16-expense-ocr.jpeg" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
+    <img src="assets/17-lroe-expenses.jpeg" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
 </p>
 <p align="center">
-    <img src="assets/18-model-303.png" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
+    <img src="assets/18-model-303.jpeg" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
 </p>
 <p align="center">
-    <img src="assets/19-model-347.png" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
-    <img src="assets/20-withholding-prefill.png" alt="Withholding drafts prefilled from booked purchases" width="49%">
+    <img src="assets/19-model-347.jpeg" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
+    <img src="assets/20-withholding-prefill.jpeg" alt="Withholding drafts prefilled from booked purchases" width="49%">
 </p>
 <p align="center">
-    <img src="assets/21-reports-navigation.png" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
-    <img src="assets/22-model-f69.png" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
+    <img src="assets/21-reports-navigation.jpeg" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
+    <img src="assets/22-model-f69.jpeg" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
 </p>
 <p align="center">
-    <img src="assets/23-corporate-tax.png" alt="Corporate income tax estimate and instalment provision" width="49%">
-    <img src="assets/24-activation-navarra.png" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
+    <img src="assets/23-corporate-tax.jpeg" alt="Corporate income tax estimate and instalment provision" width="49%">
+    <img src="assets/24-activation-navarra.jpeg" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
 </p>
 
 ## Requirements
