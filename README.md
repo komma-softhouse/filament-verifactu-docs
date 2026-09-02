@@ -2,7 +2,7 @@
 
 <p align="center">
     <img
-        src="/assets/01.png"
+        src="assets/01.jpg"
         alt="Filament Spanish fiscal compliance for Filament v5"
         width="100%"
     >
@@ -164,53 +164,53 @@ chain and nothing else; every other module is a fluent opt-in.
 ## Screenshots
 
 <p align="center">
-    <img src="/assets/02-documents.png" alt="Invoices & documents — list with actions" width="100%">
+    <img src="assets/02-documents.png" alt="Invoices & documents — list with actions" width="100%">
 </p>
 <p align="center">
-    <img src="/assets/03-document-preview.png" alt="Document preview — A4 with tributary QR and legend" width="49%">
-    <img src="/assets/04-ticket-preview.png" alt="Ticket preview — 80 mm roll with QR" width="49%">
+    <img src="assets/03-document-preview.png" alt="Document preview — A4 with tributary QR and legend" width="49%">
+    <img src="assets/04-ticket-preview.png" alt="Ticket preview — 80 mm roll with QR" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/05-template-designer.png" alt="Template designer — live A4 preview" width="49%">
-    <img src="/assets/06-template-designer-ticket.png" alt="Template designer — live thermal preview" width="49%">
+    <img src="assets/05-template-designer.png" alt="Template designer — live A4 preview" width="49%">
+    <img src="assets/06-template-designer-ticket.png" alt="Template designer — live thermal preview" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/07-fiscal-records.png" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
-    <img src="/assets/08-qr-modal.png" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
+    <img src="assets/07-fiscal-records.png" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
+    <img src="assets/08-qr-modal.png" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/09-activation.png" alt="Sealed fiscal activation — regime and mode" width="49%">
-    <img src="/assets/10-repair-order.png" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
+    <img src="assets/09-activation.png" alt="Sealed fiscal activation — regime and mode" width="49%">
+    <img src="assets/10-repair-order.png" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/11-face-history.png" alt="FACe history — registry numbers and lifecycle" width="49%">
-    <img src="/assets/12-faceb2b.png" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
+    <img src="assets/11-face-history.png" alt="FACe history — registry numbers and lifecycle" width="49%">
+    <img src="assets/12-faceb2b.png" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/13-expenses.png" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
+    <img src="assets/13-expenses.png" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
 </p>
 <p align="center">
-    <img src="/assets/14-expense-form.png" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
-    <img src="/assets/15-expense-attachment.png" alt="The supporting document, readable from the panel" width="49%">
+    <img src="assets/14-expense-form.png" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
+    <img src="assets/15-expense-attachment.png" alt="The supporting document, readable from the panel" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/16-expense-ocr.png" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
-    <img src="/assets/17-lroe-expenses.png" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
+    <img src="assets/16-expense-ocr.png" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
+    <img src="assets/17-lroe-expenses.png" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/18-model-303.png" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
+    <img src="assets/18-model-303.png" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
 </p>
 <p align="center">
-    <img src="/assets/19-model-347.png" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
-    <img src="/assets/20-withholding-prefill.png" alt="Withholding drafts prefilled from booked purchases" width="49%">
+    <img src="assets/19-model-347.png" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
+    <img src="assets/20-withholding-prefill.png" alt="Withholding drafts prefilled from booked purchases" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/21-reports-navigation.png" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
-    <img src="/assets/22-model-f69.png" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
+    <img src="assets/21-reports-navigation.png" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
+    <img src="assets/22-model-f69.png" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
 </p>
 <p align="center">
-    <img src="/assets/23-corporate-tax.png" alt="Corporate income tax estimate and instalment provision" width="49%">
-    <img src="/assets/24-activation-navarra.png" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
+    <img src="assets/23-corporate-tax.png" alt="Corporate income tax estimate and instalment provision" width="49%">
+    <img src="assets/24-activation-navarra.png" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
 </p>
 
 ## Requirements
@@ -280,18 +280,39 @@ public function panel(Panel $panel): Panel
     return $panel
         ->plugin(
             VerifactuPlugin::make()
-                // Who you are, as the implementer — travels in every record (AEAT and foral)
-                ->computerSystem(vendorName: 'Your Company SL', vendorNif: 'B00000000', name: 'Your ERP', version: '1.0')
+                // Who you are, as the implementer. Travels in every record,
+                // AEAT and foral alike.
+                ->computerSystem(
+                    vendorName: 'Your Company SL',
+                    vendorNif: 'B00000000',
+                    name: 'Your ERP',
+                    version: '1.0',
+                )
+                // TicketBAI identity and the software-guarantor licences
+                // per territory: the vendor's, never the customer's.
                 ->ticketBai(developerNif: 'B00000000', licenses: ['gipuzkoa' => 'TBAIGIP…'])
-                ->documents()
-                ->repairs()
-                ->mpdf()                               // or ->gotenbergPdf('http://gotenberg:8')
-                ->brandingDisk('public')               // where template logos/watermarks live: any disk of yours
-                ->escPos()
-                ->face()
-                //->einvoincing() See Configuration below for details.
-                ->ocr()
-                ->api(),
+
+                // Surfaces. Every one ships off; enable what you sell.
+                ->documents()          // quotes → invoices, series, templates
+                ->repairs()            // SAT repair orders
+                ->expenses()           // the received side: supplier invoices and expenses
+                ->escPos()             // thermal ticket printing
+                ->printAgent()         // cloud → till printing through the Windows agent
+                ->face()               // FACe (public administrations)
+                ->faceb2b()            // FACeB2B (large private subcontractors)
+                ->ocr()                // draft a document or an expense from a photo
+                ->api()                // the on-prem API page; the sidecar itself is VERIFACTU_API
+                ->dashboardWidgets()
+
+                // PDF engine: pick one, or PDF actions stay hidden.
+                ->mpdf()               // bundled, pure PHP
+                // ->gotenbergPdf('http://gotenberg:8')
+                // ->pdfDriver(YourConverter::class)
+
+                // Where template logos and watermark images live.
+                ->brandingDisk('public'),
+
+                // ->einvoicing() lands once the Orden Ministerial is published.
         );
 }
 ```
@@ -313,22 +334,23 @@ the first submission — see [Configuration](#configuration).
 
 | Toggle | What it enables |
 | --- | --- |
-| `->documents()` | Document, series-format and template resources, the document lifecycle |
-| `->repairs()` | SAT repair order resource |
-| `->mpdf()` | PDFs through the bundled pure-PHP engine — nothing to install, no Docker |
-| `->gotenbergPdf($url)` | PDFs through a Gotenberg instance (Docker, best fidelity, same layout) |
-| `->pdfDriver(Class::class)` | Your own `Printing\Contracts\PdfConverter` implementation |
-| `->brandingDisk($disk, $visibility = null)` | The filesystem disk template logos and watermark images are stored on and read from (`public` unless told otherwise — any disk of your `config/filesystems.php`: local, s3, minio…) |
-| `->computerSystem(...)` | The implementer identity for AEAT records (vendor name/NIF, product name/id/version, installation number) |
-| `->ticketBai(...)` | The implementer identity for TicketBAI (developer NIF, product) and the **software-guarantor licences per territory** — the vendor's, never the customer's |
-| `->escPos()` | Thermal ticket printing |
-| `->printAgent()` | Print agent pairing page and installer generation |
-| `->einvoincing()` | Pending BOE publication of the Orden Ministerial (Ley Crea y Crece / RD 238/2026) |
-| `->face()` | FACe: the "Send to FACe" action, history, settings, generate and directory pages |
-| `->faceb2b()` | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
-| `->ocr()` | The "Create from photo" OCR-assisted draft action and its settings page |
-| `->api()` | The API panel page (endpoints, per-issuer bearer keys, first call); the sidecar itself is a config toggle — see below |
-| `->dashboardWidgets()` | Dashboard widgets: fiscal stats overview + 30-day records chart |
+| <code>->documents()</code> | Document, series-format and template resources, the document lifecycle |
+| <code>->repairs()</code> | SAT repair order resource |
+| <code>->expenses()</code> | The received side: supplier invoices, tickets and credit notes, OCR capture, attachment preview, and Bizkaia's LROE expenses book. Turns the tax drafts' input side on |
+| <code>->mpdf()</code> | PDFs through the bundled pure-PHP engine — nothing to install, no Docker |
+| <code>->gotenbergPdf($url)</code> | PDFs through a Gotenberg instance (Docker, best fidelity, same layout) |
+| <code>->pdfDriver(Class::class)</code> | Your own <code>Printing\Contracts\PdfConverter</code> implementation |
+| <code>->brandingDisk($disk, $visibility = null)</code> | The filesystem disk template logos and watermark images are stored on and read from (<code>public</code> unless told otherwise — any disk of your <code>config/filesystems.php</code>: local, s3, minio…) |
+| <code>->computerSystem(...)</code> | The implementer identity for AEAT records (vendor name/NIF, product name/id/version, installation number) |
+| <code>->ticketBai(...)</code> | The implementer identity for TicketBAI (developer NIF, product) and the **software-guarantor licences per territory** — the vendor's, never the customer's |
+| <code>->escPos()</code> | Thermal ticket printing |
+| <code>->printAgent()</code> | Print agent pairing page and installer generation |
+| <code>->einvoicing()</code> | Pending BOE publication of the Orden Ministerial (Ley Crea y Crece / RD 238/2026) |
+| <code>->face()</code> | FACe: the "Send to FACe" action, history, settings, generate and directory pages |
+| <code>->faceb2b()</code> | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
+| <code>->ocr()</code> | The "Create from photo" OCR-assisted draft action and its settings page |
+| <code>->api()</code> | The API panel page (endpoints, per-issuer bearer keys, first call); the sidecar itself is a config toggle — see below |
+| <code>->dashboardWidgets()</code> | Dashboard widgets: fiscal stats overview + 30-day records chart |
 
 The core fiscal resources (Issuers, Fiscal records, Submissions, System
 events, Audit trail), the Certificates page and the report pages are
@@ -506,52 +528,52 @@ guidance stays visible to everyone.
 | Ability | Gates |
 | --- | --- |
 | **Documents** | |
-| `complete-document` | Completing a draft (numbering + chaining the fiscal record) |
-| `convert-document` | Forward conversions (quote → order → … → invoice) |
-| `create-from-photo` | OCR-assisted draft from a photo |
-| `merge-into-invoice` | Merging delivery notes into one invoice (bulk) |
-| `void-document` | Credit notes / cancellations |
-| `delete-draft` | Deleting a draft or pre-billed document (single and bulk) — completed and voided documents can never be deleted, the model refuses regardless of the UI |
-| `reprint-ticket` | Thermal reprint (the COPIA-marked duplicate) |
-| `send-by-email` | Emailing the document PDF |
-| `download-document` | PDF and HTML downloads of a document |
+| <code>complete-document</code> | Completing a draft (numbering + chaining the fiscal record) |
+| <code>convert-document</code> | Forward conversions (quote → order → … → invoice) |
+| <code>create-from-photo</code> | OCR-assisted draft from a photo |
+| <code>merge-into-invoice</code> | Merging delivery notes into one invoice (bulk) |
+| <code>void-document</code> | Credit notes / cancellations |
+| <code>delete-draft</code> | Deleting a draft or pre-billed document (single and bulk) — completed and voided documents can never be deleted, the model refuses regardless of the UI |
+| <code>reprint-ticket</code> | Thermal reprint (the COPIA-marked duplicate) |
+| <code>send-by-email</code> | Emailing the document PDF |
+| <code>download-document</code> | PDF and HTML downloads of a document |
 | **FACe / Facturae** | |
-| `send-to-face` | Send to FACe action |
-| `send-to-faceb2b` | Send to FACeB2B action |
-| `download-facturae` | Signed/unsigned Facturae download from a document |
-| `generate-facturae` | The "New Facturae" page action |
-| `generate-facturae-ocr` | The "From PDF / photo (OCR)" standalone flow |
-| `check-face-registration` | Polling FACe and persisting the tramitación status |
-| `resend-to-face` | Resending a stored submission |
-| `cancel-faceb2b` | FACeB2B cancellation requests |
-| `download-xsig` | Downloading the stored signed `.xsig` |
-| `view-face-xml` | The pretty-printed XML inspector |
+| <code>send-to-face</code> | Send to FACe action |
+| <code>send-to-faceb2b</code> | Send to FACeB2B action |
+| <code>download-facturae</code> | Signed/unsigned Facturae download from a document |
+| <code>generate-facturae</code> | The "New Facturae" page action |
+| <code>generate-facturae-ocr</code> | The "From PDF / photo (OCR)" standalone flow |
+| <code>check-face-registration</code> | Polling FACe and persisting the tramitación status |
+| <code>resend-to-face</code> | Resending a stored submission |
+| <code>cancel-faceb2b</code> | FACeB2B cancellation requests |
+| <code>download-xsig</code> | Downloading the stored signed <code>.xsig</code> |
+| <code>view-face-xml</code> | The pretty-printed XML inspector |
 | **Advisory-firm bulks** | |
-| `download-pdf-zip` | ZIP of selected documents' PDFs |
-| `download-facturae-zip` | ZIP of selected invoices as signed Facturae |
+| <code>download-pdf-zip</code> | ZIP of selected documents' PDFs |
+| <code>download-facturae-zip</code> | ZIP of selected invoices as signed Facturae |
 | **Issuers & fiscal lifecycle** | |
-| `create-issuer` | Creating an issuer from auxiliary screens |
-| `activate-fiscal` | The sealed, irreversible fiscal activation |
-| `switch-to-verifactu` | The one-way non-Verifactu → VERI\*FACTU switch |
-| `edit-tbai-settings` | TicketBAI territory settings (Bizkaia self-employed flag, advanced licence override) |
-| `remit-on-demand` | The non-Verifactu voluntary/requirement remission |
-| `upload-certificate` | Uploading an issuer certificate |
-| `remove-certificate` | Removing an issuer certificate |
-| `manage-social-collaborator` | The global gestoría certificate (upload and remove) |
-| `generate-api-key` | Generating a bearer key |
-| `revoke-api-key` | Revoking a bearer key |
+| <code>create-issuer</code> | Creating an issuer from auxiliary screens |
+| <code>activate-fiscal</code> | The sealed, irreversible fiscal activation |
+| <code>switch-to-verifactu</code> | The one-way non-Verifactu → VERI\*FACTU switch |
+| <code>edit-tbai-settings</code> | TicketBAI territory settings (Bizkaia self-employed flag, advanced licence override) |
+| <code>remit-on-demand</code> | The non-Verifactu voluntary/requirement remission |
+| <code>upload-certificate</code> | Uploading an issuer certificate |
+| <code>remove-certificate</code> | Removing an issuer certificate |
+| <code>manage-social-collaborator</code> | The global gestoría certificate (upload and remove) |
+| <code>generate-api-key</code> | Generating a bearer key |
+| <code>revoke-api-key</code> | Revoking a bearer key |
 | **Fiscal records** | |
-| `resend-record` | Requeueing a rejected record (single and bulk) |
-| `download-tbai-xsig` | Downloading the signed TicketBAI XML |
-| `query-aeat` | The AEAT read-back (quick status and detailed modal) |
-| `view-qr` | Viewing and downloading the tributary QR |
+| <code>resend-record</code> | Requeueing a rejected record (single and bulk) |
+| <code>download-tbai-xsig</code> | Downloading the signed TicketBAI XML |
+| <code>query-aeat</code> | The AEAT read-back (quick status and detailed modal) |
+| <code>view-qr</code> | Viewing and downloading the tributary QR |
 | **Templates & SAT** | |
-| `quote-repair` | Issuing the repair quote (Q series) from the order's lines |
-| `decline-repair-quote` | Closing a quoted order as declined, optionally charging the diagnostic fee |
-| `transition-repair` | Moving a repair order through its lifecycle |
-| `deliver-repair` | Delivering (which issues the fiscal document) |
-| `print-repair-paper` | Deposit receipt and repair report printing |
-| `send-repair-by-email` | Emailing either SAT paper |
+| <code>quote-repair</code> | Issuing the repair quote (Q series) from the order's lines |
+| <code>decline-repair-quote</code> | Closing a quoted order as declined, optionally charging the diagnostic fee |
+| <code>transition-repair</code> | Moving a repair order through its lifecycle |
+| <code>deliver-repair</code> | Delivering (which issues the fiscal document) |
+| <code>print-repair-paper</code> | Deposit receipt and repair report printing |
+| <code>send-repair-by-email</code> | Emailing either SAT paper |
 
 Groupings are deliberate: receipt and report share `print-repair-paper`,
 the quick and detailed AEAT queries share `query-aeat`, viewing and
