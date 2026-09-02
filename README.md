@@ -1501,9 +1501,17 @@ printers:
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has
 changed recently.
 
-## Contributing
-
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+## Support and community
+ 
+The plugin's source is private. Everything public lives in the docs
+repository:
+ 
+- **[Documentation](https://github.com/komma-softhouse/filament-verifactu-docs)** — this README and the guides.
+- **[Issues](https://github.com/komma-softhouse/filament-verifactu-docs/issues)** — bugs and feature requests.
+- **[Discussions](https://github.com/komma-softhouse/filament-verifactu-docs/discussions)** — questions, integration help, show and tell.
+Lifetime licence holders get access to the
+[source repository](https://github.com/komma-softhouse/filament-verifactu)
+and may report there directly.
 
 ## Security Vulnerabilities
 
