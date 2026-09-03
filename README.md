@@ -146,16 +146,15 @@ specification is published.
 - **Estimates the corporate income tax and its instalment** from invoiced
   income less booked purchases, on the 2026 rate scale, with payroll,
   depreciation and fiscal adjustments declared — a provisioning tool, not
-  a filing. The Basque treasuries keep the same numbering, so a TicketBAI
-  issuer's 303/347/349 drafts read its own chained foral records — with
-  the quarterly 110 as their general payroll model (their 111 is the
-  monthly large-company one) and no 347 in Bizkaia, where the LROE
-  (Batuz) replaces it — the LROE covers income and expenses (models
-  140/240): this plugin submits its issued-sales chapter, the expenses
-  chapters live in your accounting. Navarra issuers get the same drafts
-  under the
-  foral numbers — F-69, F-50, the foral 349, 715 and 759 — read from the
-  completed fiscal documents.
+  a filing.
+- **Serves every treasury under its own numbers.** The Basque treasuries
+  keep the state numbering, so a TicketBAI issuer's 303/347/349 drafts
+  read its own chained foral records — with the quarterly 110 as their
+  general payroll model (their 111 is the monthly large-company one) and
+  no 347 in Bizkaia, where the LROE replaces it and both of its chapters
+  ship. Navarra issuers get the same drafts under the foral numbers —
+  F-69, F-50, the foral 349, 715 and 759 — read from the completed
+  fiscal documents.
 
 Every surface beyond the core fiscal resources ships **disabled by
 default** — a host that registers only the plugin object gets the fiscal
@@ -436,7 +435,7 @@ VERIFACTU_REPRESENTATIVE_NIF=
 # official WSDL; override only if the AEAT moves the service.
 VERIFACTU_AEAT_QUERY_SANDBOX=https://prewww1.aeat.es
 VERIFACTU_AEAT_QUERY_PRODUCTION=https://www1.agenciatributaria.gob.es
-VERIFACTU_AEAT_QUERY_PATH=/wlpl/TIKE-CONT/ws/SistemaFacturacion/ConsultaSOAP
+VERIFACTU_AEAT_QUERY_PATH=/wlpl/TIKE-CONT/ws/SistemaFacturacion/VerifactuSOAP   # the query shares the submission endpoint
 
 # PDF rendering — an explicit choice. mpdf: bundled pure-PHP engine, nothing
 # to install. gotenberg: Chromium over HTTP (Docker), best fidelity. Or the
@@ -467,11 +466,54 @@ VERIFACTU_FACE_TSA_PASSWORD=
 # or stores it encrypted on that page)
 VERIFACTU_OCR=true
 
-# Documents, repairs, on-prem API sidecar
+# Documents, repairs, expenses (received side), on-prem API sidecar
 VERIFACTU_DOCUMENTS=true
 VERIFACTU_REPAIRS=true
+VERIFACTU_EXPENSES=true
 VERIFACTU_API=true
 ```
+
+## Licensing at runtime
+
+The plugin validates its licence against Anystack once a day and keeps
+the verdict in the database (`verifactu_license_state`), so a
+`cache:clear` never restarts the clock. The fingerprint is **the host of
+`APP_URL`** — nobody types it, so a key bought for one domain does not
+validate on another.
+
+There is nothing to configure. The licence key is the one you typed once
+at `composer require` — it lives in Composer's `auth.json` (in the project
+or in `COMPOSER_HOME`) on whichever machine runs the plugin, exactly as
+for any private package, and the plugin reads it from there. Renewals
+happen on Anystack, which the key already identifies; nobody ever types a
+key into the panel.
+
+The product, the endpoint, the fingerprint and the grace period are fixed
+in code on purpose — a setting that could point the check elsewhere or
+switch it off would be no check at all. The check is skipped only inside a
+PHPUnit/Pest run, so your own test suite never touches the licence server.
+
+What an expired, wrong-domain or missing licence means, in order:
+
+1. **30, 15 and 7 days before expiry** — a banner on every panel page.
+   Nothing changes.
+2. **Once the licence server says no** — a 15-day grace period: red
+   banner, everything keeps working. A three-day administrative delay
+   never takes a business down on a Friday.
+3. **After the grace period, issuing stops**: completing documents,
+   chaining records, submitting to the AEAT or a foral treasury, FACe,
+   OCR capture, booking purchases — from the panel, the facade and the
+   API sidecar alike, with the reason and a renewal link.
+4. **What never stops**: logging in, viewing and exporting every record,
+   document and submission already made, downloading PDFs and signed
+   XML, the FACe history, chain verification. The records belong to the
+   taxpayer, who is legally bound to keep and exhibit them; the licence
+   buys the right to issue new ones.
+
+If the licence server is unreachable, the last known verdict stands — our
+outage is never yours. `php artisan verifactu:license` shows the verdict,
+`--refresh` asks Anystack now; schedule it daily so the banner is fresh
+before anyone opens the panel.
 
 ## Authorization
 
@@ -697,10 +739,11 @@ text as of 03/12/2025:
   threshold) · its own 349 filing · 715 payroll/professional
   withholding · 759 urban-lease withholding (19%, quarterly; monthly
   filers use 760, out of scope).
-- Modelo 303's output VAT (devengado) is derived from chained sales
-  records; input VAT (soportado) is not tracked by this plugin (it belongs
-  to the purchase ledger) and is supplied manually before the result box
-  is meaningful.
+- Modelo 303's output VAT (devengado) is derived from the issuer's own
+  sales; input VAT (soportado) comes from the booked purchases of the
+  period — only its deductible share, which is what the return asks for
+  — with the manual figure kept as an adjustment for prorrata or invoices
+  outside the ledger.
 - FACe response parsing matches the documented `FaceClient` response shape
   (`resultado.codigo` "0" = success; `factura.numeroRegistro`,
   `factura.organoGestor` on success), and registration checks map the
@@ -1340,15 +1383,12 @@ draft with lines, complete it, fetch the PDF) — today the sidecar assumes
 the terminal owns its numbering and only needs the fiscal record and the
 QR.
 
-**Received-invoices ledger** (purchase invoices, OCR-fed), so Modelo 303's
-input VAT (soportado) can be derived instead of typed.
-
 **SII (Suministro Inmediato de Información)**: near-real-time VAT ledger
 submission for REDEME and large-company issuers — the AEAT flavour and the
 foral ones that exist (Navarra runs its own SII; Bizkaia's ledger duty is
-already Batuz/LROE, which this plugin submits today). The issued-invoices
-ledger is derivable from the chained records now; the received side waits
-on the received-invoices ledger above, so `->sii()` ships after it.
+already Batuz/LROE, which this plugin submits today, both chapters). Both
+ledgers exist now — issued invoices from the chained records, received
+ones from the expenses module — so `->sii()` is the next engine.
 
 **NaTicket engine**: everything around it already ships — see
 [Navarra: the fourth regime](#navarra-the-fourth-regime). The driver
@@ -1366,13 +1406,13 @@ sold nationally or abroad as classified by each line's own AEAT-style
 operation code (S1/S2/E1-E6/N1-N2) — foreign lines default to the "service"
 category absent a line-level goods/services signal in `BreakdownData`, the
 same honest limitation Modelo 349's classification already documents.
-Modelo 111 and 115 are manual entry calculators: this plugin fiscalizes
-sales and has no visibility into payroll or rent payments the business
-makes.
+Modelo 111/110/715 and 115/759 prefill their payees from booked purchases
+(professional fees and rent); payroll has no ledger here and is still
+entered by hand.
 
 ## Architecture and add-on pricing
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for how the plugin is built
+See [ARCHITECTURE.md](https://github.com/komma-softhouse/filament-verifactu-docs/blob/main/ARCHITECTURE.md) for how the plugin is built
 internally (the single-gate/two-engines design) and — the part that
 matters for selling this — exactly which toggles map to which add-ons,
 and what pricing was actually settled on versus what's still an open
@@ -1425,7 +1465,7 @@ What the plugin cannot do for you and the installer must set up once:
 composer test
 ```
 
-The suite ships with the package — 230 tests covering the chained hash
+The suite ships with the package — 238 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
@@ -1491,6 +1531,12 @@ printers:
 - **Demo seeding is incremental** — `db:seed --class=VerifactuDemoSeeder`
   adds only what is missing. Never `migrate:fresh` a database that has
   been used: fiscal chains are append-only.
+- **Panel render hooks go in `Plugin::register()`, never in `boot()`**:
+  `Panel::boot()` hands its hooks to `FilamentView` before it boots the
+  plugins, so a hook added in `boot()` is silently never rendered.
+- **Panel render hooks go in `Plugin::register()`, never in `boot()`**:
+  `Panel::boot()` hands its hooks to `FilamentView` before it boots the
+  plugins, so a hook added in `boot()` is silently never rendered.
 - **The plugin and the AEAT engine share the PSR-4 root
   `Komma\Verifactu\`** across two `src/` directories. Never add
   `Models\Model`, `Models\ComputerSystem`, `Services\AeatClient` or
@@ -1498,33 +1544,34 @@ printers:
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has
+Please see [CHANGELOG](https://github.com/komma-softhouse/filament-verifactu-docs/blob/main/CHANGELOG.md) for more information on what has
 changed recently.
 
 ## Support and community
- 
+
 The plugin's source is private. Everything public lives in the docs
 repository:
- 
+
 - **[Documentation](https://github.com/komma-softhouse/filament-verifactu-docs)** — this README and the guides.
 - **[Issues](https://github.com/komma-softhouse/filament-verifactu-docs/issues)** — bugs and feature requests.
 - **[Discussions](https://github.com/komma-softhouse/filament-verifactu-docs/discussions)** — questions, integration help, show and tell.
+
 Lifetime licence holders get access to the
 [source repository](https://github.com/komma-softhouse/filament-verifactu)
 and may report there directly.
 
 ## Security Vulnerabilities
 
-Please review [our security policy](.github/SECURITY.md) on how to report
-security vulnerabilities.
+Never in a public issue or discussion. Please review
+[our security policy](https://github.com/komma-softhouse/filament-verifactu-docs/blob/main/SECURITY.md) — a private advisory on the docs
+repository, or **security@kommasofthouse.com**.
 
 ## Credits
 
 - [Elias Olivtradet](https://github.com/edeoliv)
 - [Komma SoftHouse](https://github.com/komma-softhouse)
-- [All Contributors](../../contributors)
 
 ## License
 
-This is commercial software. Please see [License File](LICENSE.md) for the
+This is commercial software. Please see [License File](https://github.com/komma-softhouse/filament-verifactu-docs/blob/main/LICENSE.md) for the
 full terms.
