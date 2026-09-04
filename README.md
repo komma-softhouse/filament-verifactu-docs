@@ -504,9 +504,8 @@ happen on Anystack, which the key already identifies; nobody ever types a
 key into the panel.
 
 The product, the endpoint, the fingerprint and the grace period are fixed
-in code on purpose — a setting that could point the check elsewhere or
-switch it off would be no check at all. The check is skipped only inside a
-PHPUnit/Pest run, so your own test suite never touches the licence server.
+in code on purpose — nothing about the check is a setting. Your own test
+suite never touches the licence server.
 
 What an expired, wrong-domain or missing licence means, in order:
 
@@ -1146,9 +1145,9 @@ Content-Type: application/json
 
 {
   "document_id": 42,
-  "buyer_name": "Concello de Ribeira", "buyer_nif": "P1507400H",
-  "recipient_email": "notificaciones@ribeira.gal",
-  "dir3_code": "L01150737",
+  "buyer_name": "Ayuntamiento de Ejemplo", "buyer_nif": "P0000000A",
+  "recipient_email": "facturas@ejemplo.es",
+  "dir3_code": "L01000000",
   "dir3_gestor": null, "dir3_tramitador": null,
   "contract_reference": "EXP 2026/0042",
   "attach_pdf": true
