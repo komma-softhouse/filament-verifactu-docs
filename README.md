@@ -1,6 +1,6 @@
 # Filament Spanish fiscal compliance for Filament v5
 
-<p align="center">
+<p align="center" class="filament-hidden">
     <img
         src="assets/01.png"
         alt="Filament Spanish fiscal compliance for Filament v5"
