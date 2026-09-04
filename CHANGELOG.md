@@ -4,7 +4,68 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.0.0] - Unreleased
+## [1.2.0] - 2026-09-04
+
+### Added
+- Fiscal calendar: every issuer's obligations under its treasury's models,
+  with statutory deadlines, an overdue badge, "Fill in" opening the exact
+  draft, the treasury portal, and filed / omitted states with the receipt
+  reference (`verifactu_filings`).
+- "Registered in the SII" at fiscal activation: an AEAT issuer sealed as
+  outside the RRSIF (art. 3.2 RD 1007/2023) — numbered invoices, no chain,
+  no tributary QR, drafts read from the completed documents. Refused for
+  foral issuers and for VERI*FACTU mode.
+- Collections on sales: collected / pending / overdue against the due
+  date, payment method, "Mark as collected" and "Mark as not collected",
+  filters, and the Collected / Pending / Overdue cards above the documents
+  list. Purchases gain a due date and a payment method.
+- Chart of accounts seeded from the PGC Pymes, an income account per sale
+  and an expense account per purchase (category defaults, remembered per
+  counterparty NIF), and a yearly accounting export CSV.
+- Financial summary widget on the dashboard: income, booked purchases,
+  result, VAT to settle, IRPF to settle — year to date, every issuer.
+- `mark-collected` ability; demo seeder blocks for the chart, collections,
+  an SII-exempt issuer and the calendar.
+
+### Fixed
+- Fourth-quarter deadline of the AEAT withholding models (111, 115) is
+  20 January, not 30.
+
+## [1.1.1] - 2026-09-03
+
+### Changed
+- Provenance notes in 21 docblocks rewritten without naming other
+  products; comments only.
+- README links to the architecture, changelog, security policy and
+  licence files are absolute to the public docs repository, so they
+  resolve from the Filament plugin directory as well as from GitHub.
+- The licence check reports release `1.1.1` in its validation scope.
+
+## [1.1.0] - 2026-09-03
+
+### Added
+- Runtime licence check against Anystack (`LicenseGuard`): the key is read
+  from Composer's `auth.json` — nothing to configure — and validated daily
+  with the host of `APP_URL` as fingerprint; verdict persisted in
+  `verifactu_license_state`, banners at 30/15/7 days before expiry, a
+  15-day grace period once the licence is not in force, and only then a
+  stop on issuing — completing, chaining, submitting, FACe, OCR and
+  booking, from the panel, the facade and the API sidecar alike. Reading,
+  exporting, downloading and chain verification never stop. A licence
+  server outage keeps the last known verdict. `verifactu:license` shows
+  and refreshes the verdict.
+
+### Fixed
+- `AeatQueryService` posted to a `/ConsultaSOAP` path that does not exist
+  at the AEAT; the query operation is served by the same `VerifactuSOAP`
+  endpoint as the submissions.
+- `verifactu:homologate`: nine-character sandbox NIF, no recipient on the
+  F2, a recipient on the R1, and child rows removed before the disposable
+  issuer.
+- Fiscal records table gains a copyable, searchable CSV column (TBAI
+  identifier for foral records).
+
+## [1.0.0] - 2026-09-03
 
 First release: everything below ships together; nothing was published before.
 
@@ -39,11 +100,10 @@ First release: everything below ships together; nothing was published before.
   pre-bills and kitchen routing, and SAT repair orders.
 - Gapless per-issuer, per-type series numbering with configurable formats.
 - Document templates with a dual (A4 + thermal ticket) live designer, A4
-  rendering with automatic draft/copy watermarking, and a 13-type ESC/POS
-  printer (14 from [Unreleased] onwards, with `GiftVoucher` added).
+  rendering with automatic draft/copy watermarking, and a 14-kind ESC/POS
+  printer.
 - FACe electronic invoicing (send, cancel, DIR3 administration lookup) and
-  OCR-assisted document drafting (rewritten on Laravel AI from
-  [Unreleased] onwards — originally Gemini-only).
+  OCR-assisted document drafting.
 - An on-prem API sidecar for external ERPs/POS terminals, authenticated by
   per-issuer bearer keys.
 - Draft fiscal reports: Modelo 303 (VAT), 347 (third-party operations), 349
@@ -94,7 +154,7 @@ First release: everything below ships together; nothing was published before.
   draft (`Verifactu::mergeDocuments()`), from a bulk table action.
 - Print Agent add-on: pairing, Windows installer/uninstaller generation
   (NSSM service), broadcast-based ticket dispatch, and online/offline
-  status — ported from the pattern validated in production at Marfil POS.
+  status — the pattern validated in production on real tills.
 - OCR rewritten on [Laravel AI](https://laravel.com/docs/13.x/ai-sdk) with
   structured output — the provider is never hardcoded; the host picks any
   provider they already hold a key for from `OcrSettingsPage`.
@@ -104,7 +164,7 @@ First release: everything below ships together; nothing was published before.
 - Repair orders: a customer-facing tracking QR (distinct from the tributary
   QR) and a `RepairStatusChanged` event on every transition.
 - Bulk CSV/XLSX export on the fiscal records and system events tables, and
-  CSV export on all five report pages.
+  CSV export on every report page.
 - `verifactu:submit-batch` command for on-demand (requirement/voluntary)
   submissions from the terminal.
 - `Verifactu::zReport()`, `xReport()` and `movements()` — host-supplied
@@ -112,11 +172,8 @@ First release: everything below ships together; nothing was published before.
   `AuditEntry` on every Z close.
 - A `GiftVoucher` ESC/POS ticket kind (stored-value voucher), distinct from
   the gift receipt, and reprint tickets always carry a "COPY" mark.
-- Modelo 349 now classifies each line as goods (E) or services (S) from the
-  chained record's own operationType (E5/N2), instead of a fixed default;
-  Modelo 303/347/349 now refuse (in both the UI and the service layer) to
-  run against a foral issuer — those forms don't exist outside AEAT's
-  common territory.
+- Modelo 349 classifies each line as goods (E) or services (S) from the
+  chained record's own operationType (E5/N2), instead of a fixed default.
 - A consolidated `VerifactuSettingsPage` per issuer (activation, certificate,
   mode, environment, API key, TicketBAI license/self-employed flag —
   editable after activation, unlike the other sealed fields).
@@ -160,4 +217,7 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
-[1.0.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/1.0.0
+[1.2.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.0
+[1.1.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.1
+[1.1.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.0
+[1.0.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.0.0

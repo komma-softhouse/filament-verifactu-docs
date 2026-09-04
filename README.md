@@ -128,7 +128,7 @@ specification is published.
   rejected records in bulk.
 - **Gates every panel action behind a configurable authorization system**
   (see [Authorization](#authorization)) — everything enabled by default,
-  each of the 41 abilities switchable globally or per user.
+  each of the 42 abilities switchable globally or per user.
 - **Keeps the received side of the ledger too** (`->expenses()`): purchase
   invoices, purchase tickets and supplier credit notes, drafted by hand or
   captured with the same OCR, with the deductible VAT share, the expense
@@ -155,6 +155,26 @@ specification is published.
   ship. Navarra issuers get the same drafts under the foral numbers —
   F-69, F-50, the foral 349, 715 and 759 — read from the completed
   fiscal documents.
+- **Keeps a fiscal calendar.** Every issuer's obligations — its treasury's
+  quarterly and annual models since its activation — with deadlines,
+  overdue count in the menu, "Fill in" opening the exact draft, the
+  treasury's portal one click away, and filed / omitted with the receipt
+  reference.
+- **Knows who is under the SII.** An AEAT issuer registered in the
+  Suministro Inmediato de Información is sealed as outside the RRSIF (art.
+  3.2 RD 1007/2023): numbered invoices, no chain, no tributary QR, drafts
+  read from the completed documents.
+- **Tracks collection and payment.** Every completed sale is collected,
+  pending or overdue against its due date, with the payment method; the
+  documents list opens on Collected / Pending / Overdue; purchases carry
+  their due date and how they were paid. Bookkeeping, never fiscal
+  content: it stays editable after completion.
+- **Speaks the accountant's language.** A chart of accounts seeded from
+  the PGC Pymes, an income account on every sale and an expense account on
+  every purchase (proposed from the category, remembered per NIF), and a
+  yearly accounting export the gestoría imports instead of retyping.
+- **Sums the year on the dashboard**: income, booked purchases, result,
+  VAT to settle and IRPF to settle, from the same sources the drafts use.
 
 Every surface beyond the core fiscal resources ships **disabled by
 default** — a host that registers only the plugin object gets the fiscal
@@ -1358,6 +1378,60 @@ This plugin models that reality instead of papering over it:
   models that as **two issuers** (one AEAT, one Navarra), same as any
   multi-administration business.
 
+## Fiscal calendar, collections and the chart of accounts
+
+Three things the accountant asks about on day one, all reading the same
+sources as the tax drafts.
+
+**Fiscal calendar** (Reports → Fiscal calendar). Every issuer owes the
+models of its treasury for each quarter since its fiscal activation, plus
+the annual third-party model — 303/111/115/349 and the 347 for the AEAT,
+303/110/115/349 for the Basque treasuries (no 347 in Bizkaia: the LROE
+replaces it), F-69/715/759/349 and the F-50 for Navarra. Deadlines are the
+statutory ones (the 20th after each quarter for the AEAT and Navarra, the
+25th for the Basque treasuries; 20 January for the fourth-quarter
+withholding models, 30/31 January for the rest; end of February for the
+annual models). The menu badge counts overdue obligations across every
+issuer; "Fill in" opens the draft of that exact model and period;
+"File at the treasury" opens the portal (`filings.portals` in the config);
+filed rows keep the receipt reference, omitted rows the reason, and both
+reopen.
+
+**Registered in the SII.** When activating an AEAT issuer in non-Verifactu
+mode, "Situation before the RRSIF" offers *Registered in the SII*: the
+issuer is sealed as exempt from the RRSIF (art. 3.2 RD 1007/2023) — its
+invoices complete and number as usual, no record is chained, no tributary
+QR is printed, the switch to VERI*FACTU never appears, and its 303/347/349
+drafts read the completed documents. Foral issuers and VERI*FACTU mode
+refuse the exemption.
+
+**Collections.** A completed fiscal document is *collected* once it has a
+collection date, *overdue* when its due date has passed without one, and
+*pending* otherwise. The documents list shows the status, filters by it
+and by payment method, offers "Mark as collected" (date and method) and
+"Mark as not collected", and opens on three cards — Collected (with the
+share of what was invoiced), Pending, Overdue (with the count). Purchases
+gain a due date and a payment method, and "Mark as paid" asks for both.
+Collection is bookkeeping: it changes freely on a completed document while
+the fiscal content stays frozen.
+
+**Chart of accounts** (Billing → Chart of accounts). "Seed the default
+chart" loads the PGC Pymes accounts — groups 7 (income), 6 (expense), 2
+(assets) and the usual financing and treasury ones — editable and
+extendable with subaccounts (6230, 6231…). Every sale carries an income
+account and every purchase an expense account; expense categories propose
+theirs (rent → 621, professional services → 623, supplies → 628, equipment
+→ 217) and the account chosen for a counterparty is remembered per NIF and
+proposed on the next document. "Accounting export" streams one CSV a year
+with both sides — date, number, counterparty, NIF, account code and name,
+base, VAT, withheld, total, payment method and settlement date.
+
+**Financial summary** on the dashboard: income and output VAT, booked
+purchases and deductible VAT, result, VAT to settle (output minus
+deductible input, with a note when it is in your favour) and IRPF to
+settle (withheld on purchases — the 111/115 payable), year to date across
+every issuer.
+
 ## Roadmap
 
 **B2B electronic invoicing** (Ley 18/2022 "Crea y Crece", RD 238/2026): the
@@ -1465,7 +1539,7 @@ What the plugin cannot do for you and the installer must set up once:
 composer test
 ```
 
-The suite ships with the package — 238 tests covering the chained hash
+The suite ships with the package — 256 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
