@@ -182,58 +182,53 @@ chain and nothing else; every other module is a fluent opt-in.
 
 ## Screenshots
 
-<p align="center">
-    <img src="assets/02-documents.jpeg" alt="Invoices & documents — list with actions" width="100%">
-</p>
-<p align="center">
-    <img src="assets/03-document-preview.jpeg" alt="Document preview — A4 with tributary QR and legend" width="49%">
-    <img src="assets/04-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="49%">
-</p>
-<p align="center">
-    <img src="assets/04-01-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="100%">
-</p>
-<p align="center">
-    <img src="assets/05-template-designer.jpeg" alt="Template designer — live A4 preview" width="49%">
-    <img src="assets/06-template-designer-ticket.jpeg" alt="Template designer — live thermal preview" width="49%">
-</p>
-<p align="center">
-    <img src="assets/07-fiscal-records.jpeg" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
-    <img src="assets/08-qr-modal.jpeg" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
-</p>
-<p align="center">
-    <img src="assets/09-activation.jpeg" alt="Sealed fiscal activation — regime and mode" width="49%">
-    <img src="assets/10-repair-order.jpeg" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
-</p>
-<p align="center">
-    <img src="assets/11-face-history.jpeg" alt="FACe history — registry numbers and lifecycle" width="49%">
-    <img src="assets/12-faceb2b.jpeg" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
-</p>
-<p align="center">
-    <img src="assets/13-expenses.jpeg" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
-</p>
-<p align="center">
-    <img src="assets/14-expense-form.jpeg" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
-    <img src="assets/15-expense-attachment.jpeg" alt="The supporting document, readable from the panel" width="49%">
-</p>
-<p align="center">
-    <img src="assets/16-expense-ocr.jpeg" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
-    <img src="assets/17-lroe-expenses.jpeg" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
-</p>
-<p align="center">
-    <img src="assets/18-model-303.jpeg" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
-</p>
-<p align="center">
-    <img src="assets/19-model-347.jpeg" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
-    <img src="assets/20-withholding-prefill.jpeg" alt="Withholding drafts prefilled from booked purchases" width="49%">
-</p>
-<p align="center">
-    <img src="assets/21-reports-navigation.jpeg" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
-    <img src="assets/22-model-f69.jpeg" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
-</p>
-<p align="center">
-    <img src="assets/23-corporate-tax.jpeg" alt="Corporate income tax estimate and instalment provision" width="49%">
-    <img src="assets/24-activation-navarra.jpeg" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
-</p>
+![Invoices & documents — list with actions](assets/02-documents.jpeg)
+
+![Document preview — A4 with tributary QR and legend](assets/03-document-preview.jpeg)
+
+![Ticket preview — 80 mm roll with QR](assets/04-ticket-preview.jpeg)
+
+![Ticket preview — 80 mm roll with QR](assets/04-01-ticket-preview.jpeg)
+
+![Template designer — live A4 preview](assets/05-template-designer.jpeg)
+
+![Template designer — live thermal preview](assets/06-template-designer-ticket.jpeg)
+
+![Fiscal records — hash chain, statuses, QR self-check](assets/07-fiscal-records.jpeg)
+
+![Tributary QR modal — AEAT / TicketBAI](assets/08-qr-modal.jpeg)
+
+![Sealed fiscal activation — regime and mode](assets/09-activation.jpeg)
+
+![Repair order — SAT lifecycle, receipt and report](assets/10-repair-order.jpeg)
+
+![FACe history — registry numbers and lifecycle](assets/11-face-history.jpeg)
+
+![FACeB2B — the receiver-side lifecycle FACe alone lacks](assets/12-faceb2b.jpeg)
+
+![Expenses & received invoices — issuer, type, category and scan](assets/13-expenses.jpeg)
+
+![Registering a supplier's paper — deductible share, category, withholding](assets/14-expense-form.jpeg)
+
+![The supporting document, readable from the panel](assets/15-expense-attachment.jpeg)
+
+![Capturing an expense from a photo, reconciled against the printed total](assets/16-expense-ocr.jpeg)
+
+![Bizkaia's LROE expenses book — the other half of Batuz](assets/17-lroe-expenses.jpeg)
+
+![Modelo 303 — output VAT chained, input VAT derived from booked purchases](assets/18-model-303.jpeg)
+
+![Modelo 347 — both sides of the form: sales (B) and purchases (A)](assets/19-model-347.jpeg)
+
+![Withholding drafts prefilled from booked purchases](assets/20-withholding-prefill.jpeg)
+
+![Reports — state and foral sets side by side, each hidden without issuers of its regime](assets/21-reports-navigation.jpeg)
+
+![F-69 — Navarra's quarterly VAT draft](assets/22-model-f69.jpeg)
+
+![Corporate income tax estimate and instalment provision](assets/23-corporate-tax.jpeg)
+
+![Navarra listed but locked — NaTicket has no published specification](assets/24-activation-navarra.jpeg)
 
 ## Requirements
 
