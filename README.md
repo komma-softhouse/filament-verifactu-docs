@@ -1560,62 +1560,6 @@ php artisan verifactu:homologate-tbai                       # TicketBAI, Araba b
 php artisan verifactu:homologate-tbai --territory=bizkaia    # or --territory=gipuzkoa
 ```
 
-## Gotchas worth knowing before you hit them
-
-Hard-won, all of them from building this against real panels and real
-printers:
-
-- **Filament v5 uploads to the app's default disk** (`FILESYSTEM_DISK`,
-  the private `local` on a fresh Laravel). Anything that later reads the
-  file must use that same disk: branding through `BrandingDisk`,
-  certificates through `certificates.disk`, expense attachments through
-  the panel's disk.
-- **Livewire temporary uploads**: `TemporaryUploadedFile` hands Symfony an
-  empty tmpfile as pathname, so `getContent()` returns zero bytes. Read
-  them with `$file->get()` — that is what `OcrAttachment` does.
-- **Blade directives glued to a word** (`kg@endif`) are never compiled
-  (`\B@`). Leave a space.
-- **Filament rule closures** are evaluated with injection, so a
-  Laravel-style `function (string $attribute, $value, Closure $fail)` must
-  be wrapped: `->rule(fn (): Closure => function (...) {...})`.
-- **Livewire cannot hold plain objects** as public properties — the report
-  DTOs implement `Wireable` for exactly that reason.
-- **A table `SelectFilter` wants a plain `value => label` array**, unlike a
-  form `Select`, which takes the enum class itself.
-- **Infolist action groups live in `Filament\Schemas\Components\Actions`**
-  in v5; the infolists namespace no longer has them.
-- **A toggleable column remembers the user's choice**, so a column that
-  ships hidden stays hidden for anyone who already opened the page. If it
-  must always be visible (the issuer on a multi-company table), do not make
-  it toggleable.
-- **mPDF**: no `position: fixed` (the footer goes through `SetHTMLFooter`,
-  and any `@page` rule wipes it — the driver strips it first); no `div`
-  with border or height inside table cells; raster watermarks are prepared
-  with GD (cover, scale, rotate); SVG watermarks cannot be rotated.
-- **Gotenberg**: send `printBackground`, and `singlePage` + `paperWidth`
-  for the roll-width ticket page.
-- **PHP's 30 s request budget** kills long OCR calls: the services raise
-  it, pass an explicit timeout to Laravel AI and retry on provider
-  overload.
-- **`ActionGroup` visibility on view pages** is evaluated before the record
-  is bound: take `?Model $record` and fall back to
-  `$livewire->getRecord()`.
-- **Customer tracking and print-agent routes register unconditionally**:
-  they are reached without a panel, so fluent toggles cannot gate them.
-- **Demo seeding is incremental** — `db:seed --class=VerifactuDemoSeeder`
-  adds only what is missing. Never `migrate:fresh` a database that has
-  been used: fiscal chains are append-only.
-- **Panel render hooks go in `Plugin::register()`, never in `boot()`**:
-  `Panel::boot()` hands its hooks to `FilamentView` before it boots the
-  plugins, so a hook added in `boot()` is silently never rendered.
-- **Panel render hooks go in `Plugin::register()`, never in `boot()`**:
-  `Panel::boot()` hands its hooks to `FilamentView` before it boots the
-  plugins, so a hook added in `boot()` is silently never rendered.
-- **The plugin and the AEAT engine share the PSR-4 root
-  `Komma\Verifactu\`** across two `src/` directories. Never add
-  `Models\Model`, `Models\ComputerSystem`, `Services\AeatClient` or
-  `Exceptions\*` to the plugin — they would shadow the engine silently.
-
 ## Changelog
 
 Please see [CHANGELOG](https://github.com/komma-softhouse/filament-verifactu-docs/blob/main/CHANGELOG.md) for more information on what has
