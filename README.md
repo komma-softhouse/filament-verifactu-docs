@@ -353,6 +353,7 @@ the first submission — see [Configuration](#configuration).
 | --- | --- |
 | <code>->documents()</code> | Document, series-format and template resources, the document lifecycle |
 | <code>->repairs()</code> | SAT repair order resource |
+| <code>->catalog()</code> | A minimal product & service catalogue that prefills document lines — for hosts that have none. Global items or per issuer |
 | <code>->expenses()</code> | The received side: supplier invoices, tickets and credit notes, OCR capture, attachment preview, and Bizkaia's LROE expenses book. Turns the tax drafts' input side on |
 | <code>->mpdf()</code> | PDFs through the bundled pure-PHP engine — nothing to install, no Docker |
 | <code>->gotenbergPdf($url)</code> | PDFs through a Gotenberg instance (Docker, best fidelity, same layout) |
@@ -1128,6 +1129,32 @@ sale's `invoice_number`/`issued_on`:
 Bearer keys are generated per issuer from `VerifactuSettingsPage` or the
 API panel page.
 
+The same key also onboards the issuer and drives the document layer, so an
+integration never has to open the panel:
+
+```
+GET    /api/v1/verifactu/issuer                    the issuer behind the key
+PATCH  /api/v1/verifactu/issuer                    plain fields (address, webhook…) — never NIF, regime or mode
+POST   /api/v1/verifactu/issuer/activate           {regime, mode, rrsif_exemption?, environment?} — sealed, once
+GET    /api/v1/verifactu/issuer/certificate        present? validity window, holder
+POST   /api/v1/verifactu/issuer/certificate        multipart .p12 + passphrase (+ holder_type), or certificate_base64
+DELETE /api/v1/verifactu/issuer/certificate
+
+GET    /api/v1/verifactu/documents                 ?type ?status ?from ?to ?customer_nif ?per_page
+POST   /api/v1/verifactu/documents                 {type, customer?, lines[], prices_include_tax?, discount_percentage?, withholding_rate?, due_date?, payment_method?, complete?}
+GET    /api/v1/verifactu/documents/{id}
+POST   /api/v1/verifactu/documents/{id}/complete   numbers, freezes, chains — the single gate
+POST   /api/v1/verifactu/documents/{id}/convert    {target}
+POST   /api/v1/verifactu/documents/{id}/credit-note {reason: R1–R5, lines?: [{line_id, quantity}]}
+POST   /api/v1/verifactu/documents/{id}/void
+GET    /api/v1/verifactu/documents/{id}/pdf        ?copy=1
+```
+
+A document of another issuer is a 404, never a leak. Line amounts go
+through the same bcmath totals as the panel; the answer carries subtotal,
+tax, total, withholding, collection status and — once completed — the
+record's hash, CSV or TBAI identifier.
+
 A host that built its own `FiscalDocument` (again, plain Eloquent — create
 the `FiscalDocument`/`DocumentLine` rows and call
 `app(Komma\Verifactu\Documents\Services\DocumentGate::class)->complete($document)`
@@ -1153,6 +1180,65 @@ Content-Type: application/json
   "attach_pdf": true
 }
 ```
+
+## Recurring documents, catalog, aging
+
+**Recurring documents** (Billing → Recurring documents): a template — customer,
+lines, VAT/IRPF, payment method, due days — with a schedule (weekly, monthly,
+quarterly, yearly, on a given day of the month, until a date). Schedule
+`verifactu:recurring:run` daily; it generates an ordinary draft per due
+template, or a numbered and chained document when "complete automatically" is
+on, through the same gate as everything else. A template the host vetoes
+(quota, licence) stays due and is retried. "Run now" and "Generate now" from
+the panel.
+
+**Catalog** (`->catalog()`): products and services with price, VAT, surcharge,
+IRPF and kitchen zone, global or per issuer; every document line gets a
+"From the catalog" picker that fills it in. Off by default — a host with its
+own catalogue keeps using it.
+
+**Aging & balances** (Reports): receivables (completed sales not collected)
+and payables (booked purchases not paid) bucketed by days past due — not due,
+1–30, 31–60, 61–90, over 90 — summed per customer or supplier with the oldest
+due date, and the document list as CSV.
+
+**Presentation files (BOE layout)**: every AEAT draft downloads as the file
+the AEAT's own "diseño de registro" describes, ready for "Presentación
+mediante fichero" on the portal: the **347** and **349** as 500-position
+records (declarant with totals, one record per party with the quarterly
+amounts and province — key B sales, key A purchases; per EU operator and key
+for the 349); the **303**, **111** and **115** in the tagged self-assessment
+layout (`<T3030EEEEPP0000><AUX>…</AUX><T30301000>…`), each box on the
+position the 2026 design assigns — output VAT per rate on 150/165/01/153/04/07,
+deductible input on 28/29, the manual adjustment on 41, the result through
+45/46/64/66/69/71; payees, base and withheld on the 111 (economic activities)
+and the 115. ISO-8859-1 throughout. Boxes this plugin does not track — cash
+above 6.000 €, cash-basis, carry-forward credits, previous declarations,
+property rentals — are left at zero for the portal to complete.
+
+**Self-test**: `verifactu:selftest {issuer}` registers and submits one real
+one-cent ticket for an issuer against the sandbox with its own certificate,
+and prints the treasury's verdict. Refuses production.
+
+## Hooks for a host that meters or bills
+
+Two things a SaaS host needs that the plugin never decides itself:
+
+```php
+// A veto before anything is issued — quota, plan, paused tenant. A non-null
+// return is the reason shown to the user; issuing stops there. Reading,
+// exporting and verifying are never asked.
+Verifactu::beforeIssuing(function (string $operation, Issuer $issuer): ?string {
+    // $operation: complete-document | register-record | cancel-record | book-expense | activate-issuer
+    return $meter->allows($issuer, $operation) ? null : __('Monthly quota reached');
+});
+```
+
+And domain events, dispatched after commit, to count, bill or notify:
+`IssuerActivated`, `DocumentCompleted`, `DocumentVoided`, `RecordRegistered`,
+`RecordCancelled`, `ExpenseBooked`, `SubmissionResolved` (with `accepted`),
+all under `Komma\Verifactu\Events`, plus the existing `RepairStatusChanged`.
+The API answers a host veto with `402` and `reason: denied_by_host`.
 
 ## Printed papers and templates
 
@@ -1533,7 +1619,7 @@ What the plugin cannot do for you and the installer must set up once:
 composer test
 ```
 
-The suite ships with the package — 256 tests covering the chained hash
+The suite ships with the package — 274 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
