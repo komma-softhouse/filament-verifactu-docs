@@ -4,6 +4,17 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.5] - 2026-09-05
+ 
+### Changed
+- The Composer archive no longer ships the Windows print-agent binaries,
+  screenshots, tests or CI (`.gitattributes` export-ignore): 17 MB → 1 MB,
+  and a package Anystack's Composer endpoint can serve.
+- The print-agent installer downloads `pos-agent.exe` and `nssm.exe` from
+  `VERIFACTU_AGENT_BINARIES_URL` (default: the host's
+  `public/downloads/windows/marfil-printer-agent/`); `/download/windows/{file}`
+  redirects there for installers generated earlier.
+
 ## [1.3.1] - 2026-09-05
 
 ### Added
@@ -268,6 +279,7 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.3.5]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.5
 [1.3.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.1
 [1.3.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0
 [1.2.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.2
