@@ -7,13 +7,9 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.3.5] - 2026-09-05
  
 ### Changed
-- The Composer archive no longer ships the Windows print-agent binaries,
-  screenshots, tests or CI (`.gitattributes` export-ignore): 17 MB → 1 MB,
-  and a package Anystack's Composer endpoint can serve.
-- The print-agent installer downloads `pos-agent.exe` and `nssm.exe` from
-  `VERIFACTU_AGENT_BINARIES_URL` (default: the host's
-  `public/downloads/windows/marfil-printer-agent/`); `/download/windows/{file}`
-  redirects there for installers generated earlier.
+- Leaner Composer archive (17 MB → 1 MB): screenshots, tests and CI stay
+  in the repository; the print-agent installer downloads its binaries
+  itself.
 
 ## [1.3.1] - 2026-09-05
 
