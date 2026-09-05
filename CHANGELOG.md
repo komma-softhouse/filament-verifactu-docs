@@ -4,6 +4,49 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-09-05
+ 
+### Added
+- Host hooks: `Verifactu::beforeIssuing()` — a veto with the host's own
+  reason before completing, chaining, cancelling, booking or activating —
+  and domain events after commit (`IssuerActivated`, `DocumentCompleted`,
+  `DocumentVoided`, `RecordRegistered`, `RecordCancelled`, `ExpenseBooked`,
+  `SubmissionResolved`). The API answers a veto with 402 `denied_by_host`.
+- API sidecar: the issuer behind the key (read, edit plain fields, sealed
+  activation, certificate upload/read/remove) and the document layer (list,
+  create with lines, complete, convert, credit note whole or per line,
+  void, PDF).
+- Recurring documents: templates that issue drafts (or completed, chained
+  documents) on a weekly/monthly/quarterly/yearly schedule, with
+  `verifactu:recurring:run` and "Run now" / "Generate now".
+- `->catalog()`: a minimal product & service catalogue that prefills
+  document lines, global or per issuer.
+- Aging & balances report: receivables and payables by days past due and
+  per party, with CSV.
+- `verifactu:selftest {issuer}`: one real one-cent ticket against the
+  sandbox with the issuer's certificate; refuses production.
+- Presentation files in the AEAT record layout (BOE) for AEAT issuers, from
+  their report pages: 347 and 349 (500-position records), 303, 111 and 115
+  (tagged self-assessment layout, 2026 designs). The 347 draft now carries
+  the quarterly split and the party's postal code.
+### Changed
+- Row actions grouped behind a "More" menu with sections on the six large
+  tables (documents, received documents, repairs, records, FACe history,
+  fiscal calendar): two or three primary buttons stay visible.
+
+## [1.2.2] - 2026-09-04
+
+### Changed
+- The licence check's test-suite exclusion detects the test runner itself
+  (its classes loaded), not `APP_ENV`: an environment variable is a
+  setting, and a setting that switches the check off would be no check at
+  all.
+- README: the banner is hidden on the Filament directory
+  (`filament-hidden`), screenshots render at one width, the engineering
+  notes moved to NOTES.md, the licensing paragraph no longer describes the
+  exclusion mechanism, and the FACe example names a fictitious
+  administration.
+
 ## [1.2.0] - 2026-09-04
 
 ### Added
@@ -217,6 +260,8 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.3.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0
+[1.2.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.2
 [1.2.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.0
 [1.1.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.1
 [1.1.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.0

@@ -1,6 +1,6 @@
 # Filament Spanish fiscal compliance for Filament v5
 
-<p align="center">
+<p align="center" class="filament-hidden">
     <img
         src="assets/01.png"
         alt="Filament Spanish fiscal compliance for Filament v5"
@@ -182,58 +182,53 @@ chain and nothing else; every other module is a fluent opt-in.
 
 ## Screenshots
 
-<p align="center">
-    <img src="assets/02-documents.jpeg" alt="Invoices & documents — list with actions" width="100%">
-</p>
-<p align="center">
-    <img src="assets/03-document-preview.jpeg" alt="Document preview — A4 with tributary QR and legend" width="49%">
-    <img src="assets/04-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="49%">
-</p>
-<p align="center">
-    <img src="assets/04-01-ticket-preview.jpeg" alt="Ticket preview — 80 mm roll with QR" width="100%">
-</p>
-<p align="center">
-    <img src="assets/05-template-designer.jpeg" alt="Template designer — live A4 preview" width="49%">
-    <img src="assets/06-template-designer-ticket.jpeg" alt="Template designer — live thermal preview" width="49%">
-</p>
-<p align="center">
-    <img src="assets/07-fiscal-records.jpeg" alt="Fiscal records — hash chain, statuses, QR self-check" width="49%">
-    <img src="assets/08-qr-modal.jpeg" alt="Tributary QR modal — AEAT / TicketBAI" width="49%">
-</p>
-<p align="center">
-    <img src="assets/09-activation.jpeg" alt="Sealed fiscal activation — regime and mode" width="49%">
-    <img src="assets/10-repair-order.jpeg" alt="Repair order — SAT lifecycle, receipt and report" width="49%">
-</p>
-<p align="center">
-    <img src="assets/11-face-history.jpeg" alt="FACe history — registry numbers and lifecycle" width="49%">
-    <img src="assets/12-faceb2b.jpeg" alt="FACeB2B — the receiver-side lifecycle FACe alone lacks" width="49%">
-</p>
-<p align="center">
-    <img src="assets/13-expenses.jpeg" alt="Expenses & received invoices — issuer, type, category and scan" width="100%">
-</p>
-<p align="center">
-    <img src="assets/14-expense-form.jpeg" alt="Registering a supplier's paper — deductible share, category, withholding" width="49%">
-    <img src="assets/15-expense-attachment.jpeg" alt="The supporting document, readable from the panel" width="49%">
-</p>
-<p align="center">
-    <img src="assets/16-expense-ocr.jpeg" alt="Capturing an expense from a photo, reconciled against the printed total" width="49%">
-    <img src="assets/17-lroe-expenses.jpeg" alt="Bizkaia's LROE expenses book — the other half of Batuz" width="49%">
-</p>
-<p align="center">
-    <img src="assets/18-model-303.jpeg" alt="Modelo 303 — output VAT chained, input VAT derived from booked purchases" width="100%">
-</p>
-<p align="center">
-    <img src="assets/19-model-347.jpeg" alt="Modelo 347 — both sides of the form: sales (B) and purchases (A)" width="49%">
-    <img src="assets/20-withholding-prefill.jpeg" alt="Withholding drafts prefilled from booked purchases" width="49%">
-</p>
-<p align="center">
-    <img src="assets/21-reports-navigation.jpeg" alt="Reports — state and foral sets side by side, each hidden without issuers of its regime" width="49%">
-    <img src="assets/22-model-f69.jpeg" alt="F-69 — Navarra's quarterly VAT draft" width="49%">
-</p>
-<p align="center">
-    <img src="assets/23-corporate-tax.jpeg" alt="Corporate income tax estimate and instalment provision" width="49%">
-    <img src="assets/24-activation-navarra.jpeg" alt="Navarra listed but locked — NaTicket has no published specification" width="49%">
-</p>
+![Invoices & documents — list with actions](assets/02-documents.jpeg)
+
+![Document preview — A4 with tributary QR and legend](assets/03-document-preview.jpeg)
+
+![Ticket preview — 80 mm roll with QR](assets/04-ticket-preview.jpeg)
+
+![Ticket preview — 80 mm roll with QR](assets/04-01-ticket-preview.jpeg)
+
+![Template designer — live A4 preview](assets/05-template-designer.jpeg)
+
+![Template designer — live thermal preview](assets/06-template-designer-ticket.jpeg)
+
+![Fiscal records — hash chain, statuses, QR self-check](assets/07-fiscal-records.jpeg)
+
+![Tributary QR modal — AEAT / TicketBAI](assets/08-qr-modal.jpeg)
+
+![Sealed fiscal activation — regime and mode](assets/09-activation.jpeg)
+
+![Repair order — SAT lifecycle, receipt and report](assets/10-repair-order.jpeg)
+
+![FACe history — registry numbers and lifecycle](assets/11-face-history.jpeg)
+
+![FACeB2B — the receiver-side lifecycle FACe alone lacks](assets/12-faceb2b.jpeg)
+
+![Expenses & received invoices — issuer, type, category and scan](assets/13-expenses.jpeg)
+
+![Registering a supplier's paper — deductible share, category, withholding](assets/14-expense-form.jpeg)
+
+![The supporting document, readable from the panel](assets/15-expense-attachment.jpeg)
+
+![Capturing an expense from a photo, reconciled against the printed total](assets/16-expense-ocr.jpeg)
+
+![Bizkaia's LROE expenses book — the other half of Batuz](assets/17-lroe-expenses.jpeg)
+
+![Modelo 303 — output VAT chained, input VAT derived from booked purchases](assets/18-model-303.jpeg)
+
+![Modelo 347 — both sides of the form: sales (B) and purchases (A)](assets/19-model-347.jpeg)
+
+![Withholding drafts prefilled from booked purchases](assets/20-withholding-prefill.jpeg)
+
+![Reports — state and foral sets side by side, each hidden without issuers of its regime](assets/21-reports-navigation.jpeg)
+
+![F-69 — Navarra's quarterly VAT draft](assets/22-model-f69.jpeg)
+
+![Corporate income tax estimate and instalment provision](assets/23-corporate-tax.jpeg)
+
+![Navarra listed but locked — NaTicket has no published specification](assets/24-activation-navarra.jpeg)
 
 ## Requirements
 
@@ -358,6 +353,7 @@ the first submission — see [Configuration](#configuration).
 | --- | --- |
 | <code>->documents()</code> | Document, series-format and template resources, the document lifecycle |
 | <code>->repairs()</code> | SAT repair order resource |
+| <code>->catalog()</code> | A minimal product & service catalogue that prefills document lines — for hosts that have none. Global items or per issuer |
 | <code>->expenses()</code> | The received side: supplier invoices, tickets and credit notes, OCR capture, attachment preview, and Bizkaia's LROE expenses book. Turns the tax drafts' input side on |
 | <code>->mpdf()</code> | PDFs through the bundled pure-PHP engine — nothing to install, no Docker |
 | <code>->gotenbergPdf($url)</code> | PDFs through a Gotenberg instance (Docker, best fidelity, same layout) |
@@ -509,9 +505,8 @@ happen on Anystack, which the key already identifies; nobody ever types a
 key into the panel.
 
 The product, the endpoint, the fingerprint and the grace period are fixed
-in code on purpose — a setting that could point the check elsewhere or
-switch it off would be no check at all. The check is skipped only inside a
-PHPUnit/Pest run, so your own test suite never touches the licence server.
+in code on purpose — nothing about the check is a setting. Your own test
+suite never touches the licence server.
 
 What an expired, wrong-domain or missing licence means, in order:
 
@@ -1134,6 +1129,32 @@ sale's `invoice_number`/`issued_on`:
 Bearer keys are generated per issuer from `VerifactuSettingsPage` or the
 API panel page.
 
+The same key also onboards the issuer and drives the document layer, so an
+integration never has to open the panel:
+
+```
+GET    /api/v1/verifactu/issuer                    the issuer behind the key
+PATCH  /api/v1/verifactu/issuer                    plain fields (address, webhook…) — never NIF, regime or mode
+POST   /api/v1/verifactu/issuer/activate           {regime, mode, rrsif_exemption?, environment?} — sealed, once
+GET    /api/v1/verifactu/issuer/certificate        present? validity window, holder
+POST   /api/v1/verifactu/issuer/certificate        multipart .p12 + passphrase (+ holder_type), or certificate_base64
+DELETE /api/v1/verifactu/issuer/certificate
+
+GET    /api/v1/verifactu/documents                 ?type ?status ?from ?to ?customer_nif ?per_page
+POST   /api/v1/verifactu/documents                 {type, customer?, lines[], prices_include_tax?, discount_percentage?, withholding_rate?, due_date?, payment_method?, complete?}
+GET    /api/v1/verifactu/documents/{id}
+POST   /api/v1/verifactu/documents/{id}/complete   numbers, freezes, chains — the single gate
+POST   /api/v1/verifactu/documents/{id}/convert    {target}
+POST   /api/v1/verifactu/documents/{id}/credit-note {reason: R1–R5, lines?: [{line_id, quantity}]}
+POST   /api/v1/verifactu/documents/{id}/void
+GET    /api/v1/verifactu/documents/{id}/pdf        ?copy=1
+```
+
+A document of another issuer is a 404, never a leak. Line amounts go
+through the same bcmath totals as the panel; the answer carries subtotal,
+tax, total, withholding, collection status and — once completed — the
+record's hash, CSV or TBAI identifier.
+
 A host that built its own `FiscalDocument` (again, plain Eloquent — create
 the `FiscalDocument`/`DocumentLine` rows and call
 `app(Komma\Verifactu\Documents\Services\DocumentGate::class)->complete($document)`
@@ -1151,14 +1172,73 @@ Content-Type: application/json
 
 {
   "document_id": 42,
-  "buyer_name": "Concello de Ribeira", "buyer_nif": "P1507400H",
-  "recipient_email": "notificaciones@ribeira.gal",
-  "dir3_code": "L01150737",
+  "buyer_name": "Ayuntamiento de Ejemplo", "buyer_nif": "P0000000A",
+  "recipient_email": "facturas@ejemplo.es",
+  "dir3_code": "L01000000",
   "dir3_gestor": null, "dir3_tramitador": null,
   "contract_reference": "EXP 2026/0042",
   "attach_pdf": true
 }
 ```
+
+## Recurring documents, catalog, aging
+
+**Recurring documents** (Billing → Recurring documents): a template — customer,
+lines, VAT/IRPF, payment method, due days — with a schedule (weekly, monthly,
+quarterly, yearly, on a given day of the month, until a date). Schedule
+`verifactu:recurring:run` daily; it generates an ordinary draft per due
+template, or a numbered and chained document when "complete automatically" is
+on, through the same gate as everything else. A template the host vetoes
+(quota, licence) stays due and is retried. "Run now" and "Generate now" from
+the panel.
+
+**Catalog** (`->catalog()`): products and services with price, VAT, surcharge,
+IRPF and kitchen zone, global or per issuer; every document line gets a
+"From the catalog" picker that fills it in. Off by default — a host with its
+own catalogue keeps using it.
+
+**Aging & balances** (Reports): receivables (completed sales not collected)
+and payables (booked purchases not paid) bucketed by days past due — not due,
+1–30, 31–60, 61–90, over 90 — summed per customer or supplier with the oldest
+due date, and the document list as CSV.
+
+**Presentation files (BOE layout)**: every AEAT draft downloads as the file
+the AEAT's own "diseño de registro" describes, ready for "Presentación
+mediante fichero" on the portal: the **347** and **349** as 500-position
+records (declarant with totals, one record per party with the quarterly
+amounts and province — key B sales, key A purchases; per EU operator and key
+for the 349); the **303**, **111** and **115** in the tagged self-assessment
+layout (`<T3030EEEEPP0000><AUX>…</AUX><T30301000>…`), each box on the
+position the 2026 design assigns — output VAT per rate on 150/165/01/153/04/07,
+deductible input on 28/29, the manual adjustment on 41, the result through
+45/46/64/66/69/71; payees, base and withheld on the 111 (economic activities)
+and the 115. ISO-8859-1 throughout. Boxes this plugin does not track — cash
+above 6.000 €, cash-basis, carry-forward credits, previous declarations,
+property rentals — are left at zero for the portal to complete.
+
+**Self-test**: `verifactu:selftest {issuer}` registers and submits one real
+one-cent ticket for an issuer against the sandbox with its own certificate,
+and prints the treasury's verdict. Refuses production.
+
+## Hooks for a host that meters or bills
+
+Two things a SaaS host needs that the plugin never decides itself:
+
+```php
+// A veto before anything is issued — quota, plan, paused tenant. A non-null
+// return is the reason shown to the user; issuing stops there. Reading,
+// exporting and verifying are never asked.
+Verifactu::beforeIssuing(function (string $operation, Issuer $issuer): ?string {
+    // $operation: complete-document | register-record | cancel-record | book-expense | activate-issuer
+    return $meter->allows($issuer, $operation) ? null : __('Monthly quota reached');
+});
+```
+
+And domain events, dispatched after commit, to count, bill or notify:
+`IssuerActivated`, `DocumentCompleted`, `DocumentVoided`, `RecordRegistered`,
+`RecordCancelled`, `ExpenseBooked`, `SubmissionResolved` (with `accepted`),
+all under `Komma\Verifactu\Events`, plus the existing `RepairStatusChanged`.
+The API answers a host veto with `402` and `reason: denied_by_host`.
 
 ## Printed papers and templates
 
@@ -1539,7 +1619,7 @@ What the plugin cannot do for you and the installer must set up once:
 composer test
 ```
 
-The suite ships with the package — 256 tests covering the chained hash
+The suite ships with the package — 274 tests covering the chained hash
 formula against the AEAT payload spec, record immutability, sealed
 activation, gapless numbering, both remission modes and their guards, the
 TicketBAI driver per territory (including Zuzendu and the Batuz
