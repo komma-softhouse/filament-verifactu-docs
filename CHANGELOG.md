@@ -4,6 +4,14 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-09-05
+
+### Added
+- `VERIFACTU_MIGRATIONS=false` (config `migrations.enabled`): keeps the
+  package's migrations out of the host's central `migrate`, for multi-tenant
+  hosts with a database per tenant that run them through their tenant
+  migrator instead.
+
 ## [1.3.0] - 2026-09-05
  
 ### Added
@@ -260,6 +268,7 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.3.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.1
 [1.3.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0
 [1.2.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.2
 [1.2.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.0
