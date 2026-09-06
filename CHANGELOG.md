@@ -4,6 +4,39 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.4.4] - 2026-09-06
+ 
+### Added
+- `->reports(false)` and `->events(false)` toggles, and the `->developer()`
+  preset (`->api()->reports(false)->events(false)`) for a console that only
+  needs the chain: issuers, records, submissions, certificates, API.
+
+## [1.4.3] - 2026-09-06
+ 
+### Changed
+- OpenAPI document: every text goes through the translator (Spanish
+  shipped; other languages fall back to English), and the regimes section
+  is written as paragraphs instead of a table.
+
+## [1.4.2] - 2026-09-06
+ 
+### Changed
+- OpenAPI document: regimes table (VERI*FACTU, non-VERI*FACTU, TicketBAI
+  per territory, Navarra), environments, authentication, idempotency and
+  error-code reference in the introduction; request examples per regime on
+  documents, records and activation; response example on Record; content
+  types on the PDF and QR endpoints; `webhooks` section with the event
+  envelope and headers; error codes as an enum. A route without a catalogue
+  entry now fails the suite. Every text of the document goes through the
+  translator: the reference renders in the application's locale (Spanish
+  shipped; the other languages fall back to English until translated).
+
+## [1.4.1] - 2026-09-06
+ 
+### Changed
+- `->api()` on a panel turns the API sidecar on for the whole application;
+  `VERIFACTU_API` stays for installations with no panel.
+
 ## [1.4.0] - 2026-09-06
  
 ### Added
@@ -320,6 +353,10 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.4.4]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.4
+[1.4.3]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.3
+[1.4.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.2
+[1.4.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.1
 [1.4.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.0
 [1.3.10]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.10
 [1.3.9]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.9
