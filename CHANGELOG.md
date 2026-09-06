@@ -4,6 +4,51 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] - 2026-09-06
+ 
+### Added
+- Account API keys (`vfk_test_…` / `vfk_live_…`): one key for several
+  issuers, limited to a scope and an environment; the caller names the
+  issuer with `X-Issuer`. Created from the API page.
+- Issuer management by API: `GET/POST /issuers`, and the representation
+  document (`/issuer/representation`).
+- Account webhooks with named events (`record.accepted`,
+  `document.completed`…), HMAC signature, event id and retries with backoff
+  (`verifactu:webhooks:retry`).
+- `Idempotency-Key` on every POST; `X-Request-Id` on every response, with
+  a request log (`verifactu:api:purge-logs`).
+- `POST /nif/validate`: format, VIES, AEAT census.
+- `GET /openapi.json`: the OpenAPI 3.1 contract built from the registered
+  routes.
+- Stable `code` on API errors.
+
+## [1.3.10] - 2026-09-06
+ 
+### Changed
+- Internal: licence state storage is configurable by connection.
+
+### Added
+- `VERIFACTU_CERTIFICATES_STORAGE=database`: the `.p12` container lives
+  encrypted with `APP_KEY` on the issuer row (and the social-collaborator one
+  in settings), materialised as a private temporary file only while an engine
+  signs. Default stays `disk`.
+
+## [1.3.8] - 2026-09-05
+ 
+### Fixed
+- Translations no longer stay in English on hosts that translate while
+  registering their panels (the locale was loaded before the package
+  registered its catalogue).
+- Regional locales (`es_ES`, `gl_ES`, `ca_ES`, `eu_ES`, `pt_PT`, `pt_BR`…)
+  are served from the base catalogue.
+
+## [1.3.7] - 2026-09-05
+ 
+### Fixed
+- Settings migrations are idempotent and all live under `database/settings`,
+  so a host whose settings repository is shared by several databases (one
+  migrate per tenant) no longer fails with "setting already exists".
+
 ## [1.3.5] - 2026-09-05
  
 ### Changed
@@ -275,6 +320,10 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.4.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.0
+[1.3.10]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.10
+[1.3.9]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.9
+[1.3.8]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.8
 [1.3.5]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.5
 [1.3.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.1
 [1.3.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0
