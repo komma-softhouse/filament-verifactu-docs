@@ -4,6 +4,27 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-09-17
+
+### Added
+- `SurfaceGate`: the authorization layer above actions. Pages and widgets
+  have no model, so a host's policies could never reach them and every
+  section of the panel was visible to everyone the plugin was registered
+  for. Each page and widget now authorizes itself against its surface
+  (`issuers`, `records`, `documents`, `reports`, `filings`, `face`,
+  `repairs`, `print`, `api`, `ocr`…), resolved host-first
+  (`SurfaceGate::resolveUsing()`), then a `verifactu.surface.{key}` Gate,
+  then `surfaces.{key}` in the config — enabled when absent, so a plain
+  install is unchanged.
+- `surfaces` config block, one switch per section.
+
+## [1.4.5] - 2026-09-07
+ 
+### Added
+- `api.middleware`: the middleware stack the API sidecar and the print-agent
+  routes run on (`['api']` by default), for hosts that scope data per
+  domain.
+
 ## [1.4.4] - 2026-09-06
  
 ### Added
@@ -353,6 +374,7 @@ First release: everything below ships together; nothing was published before.
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
 
+[1.4.5]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.5
 [1.4.4]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.4
 [1.4.3]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.3
 [1.4.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.2
