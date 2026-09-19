@@ -404,6 +404,10 @@ panel registers the plugin with `->api()`, or — for installations with no
 panel at all, such as a LAN box that only serves POS terminals — with
 `VERIFACTU_API=true`.
 
+The sidecar runs on the middleware stack of `config('filament-verifactu.api.middleware')`
+(`['api']` by default); a host that scopes data per domain adds its own
+middleware there so each call resolves keys and issuers where they live.
+
 **Keys and multi-issuer integrations.** An *issuer key* (`vf_…`) is bound to
 one issuer. An *account key* (`vfk_test_…` / `vfk_live_…`) may operate
 several — limited to a list of issuers and to one environment — and the
@@ -602,6 +606,65 @@ An unauthorized action is **hidden** (Filament's native behavior): a
 cashier who cannot void documents never sees the button. The
 "How does it work?" help modals are deliberately ungated — read-only
 guidance stays visible to everyone.
+
+### Surfaces: authorizing whole sections
+
+An ability decides whether a button is pressable. A **surface** decides
+whether a section exists for whoever is looking: its pages, its widgets and
+its resources. Resources can already be authorized by a model policy in the
+host; pages and widgets have no model, so nothing in the host could reach
+them — `SurfaceGate` is that hook.
+
+The same three layers, permissive by default:
+
+```php
+use Komma\Verifactu\Support\SurfaceGate;
+
+SurfaceGate::resolveUsing(function (string $surface): ?bool {
+    // e.g. a host that sells the sections separately
+    return match ($surface) {
+        'repairs', 'face', 'api' => $this->customerBought($surface),
+        default => null,           // falls through to Gate, then config
+    };
+});
+```
+
+```php
+Gate::define('verifactu.surface.api', fn ($user) => $user->hasRole('developer'));
+```
+
+```php
+// config/filament-verifactu.php
+'surfaces' => [
+    'repairs' => false,   // this installation does not do repairs
+    'api' => true,
+],
+```
+
+| Surface | What it covers |
+| --- | --- |
+| <code>issuers</code> | Issuers and the Certificates page |
+| <code>records</code> | Fiscal records and their dashboard widgets |
+| <code>submissions</code> | Submissions to AEAT and the foral treasuries |
+| <code>events</code> | The event log |
+| <code>audits</code> | The audit trail |
+| <code>documents</code> | Documents, numbering series, financial widgets |
+| <code>expenses</code> | Received documents and expenses |
+| <code>recurring</code> | Recurring documents |
+| <code>catalog</code> | The optional product & service catalogue |
+| <code>templates</code> | Document and ticket templates |
+| <code>ledger</code> | The chart of accounts |
+| <code>reports</code> | Tax report pages (303, 347, 349, 111, 115, foral models, corporate tax, aging) |
+| <code>filings</code> | The filing calendar |
+| <code>face</code> | FACe, FACeB2B and Facturae |
+| <code>repairs</code> | Repair orders and their templates |
+| <code>print</code> | ESC/POS and the print agent settings |
+| <code>api</code> | The API console and its keys |
+| <code>ocr</code> | Reading documents with AI, and its settings |
+
+Turning a surface off hides it; it never deletes anything. The records
+stay, the API keeps answering — the host decides what a given customer
+sees in the panel.
 
 ### The full ability list
 
