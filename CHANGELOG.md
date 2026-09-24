@@ -4,6 +4,24 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-09-24
+
+### Removed
+- The runtime licence check: the daily call to the licence server, the
+  licence banner, the grace period and the pause in issuing. The licence
+  is enforced where it is sold — access to the private Composer
+  repository, which gates every install and update.
+- The `verifactu_license_state` table, dropped by a new migration.
+- The `license.connection` config key and `VerifactuGate::LICENSED_ABILITIES`.
+
+### Changed
+- The OpenAPI document reports the installed package version.
+
+### Deprecated
+- `verifactu:license` does nothing and exits successfully, so schedules
+  that call it keep running. `LicenseExpiredException` is no longer
+  thrown. Both are removed in 2.0.
+
 ## [1.5.0] - 2026-09-17
 
 ### Added
@@ -19,28 +37,28 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - `surfaces` config block, one switch per section.
 
 ## [1.4.5] - 2026-09-07
- 
+
 ### Added
 - `api.middleware`: the middleware stack the API sidecar and the print-agent
   routes run on (`['api']` by default), for hosts that scope data per
   domain.
 
 ## [1.4.4] - 2026-09-06
- 
+
 ### Added
 - `->reports(false)` and `->events(false)` toggles, and the `->developer()`
   preset (`->api()->reports(false)->events(false)`) for a console that only
   needs the chain: issuers, records, submissions, certificates, API.
 
 ## [1.4.3] - 2026-09-06
- 
+
 ### Changed
 - OpenAPI document: every text goes through the translator (Spanish
   shipped; other languages fall back to English), and the regimes section
   is written as paragraphs instead of a table.
 
 ## [1.4.2] - 2026-09-06
- 
+
 ### Changed
 - OpenAPI document: regimes table (VERI*FACTU, non-VERI*FACTU, TicketBAI
   per territory, Navarra), environments, authentication, idempotency and
@@ -53,13 +71,13 @@ project adheres to [Semantic Versioning](https://semver.org/).
   shipped; the other languages fall back to English until translated).
 
 ## [1.4.1] - 2026-09-06
- 
+
 ### Changed
 - `->api()` on a panel turns the API sidecar on for the whole application;
   `VERIFACTU_API` stays for installations with no panel.
 
 ## [1.4.0] - 2026-09-06
- 
+
 ### Added
 - Account API keys (`vfk_test_…` / `vfk_live_…`): one key for several
   issuers, limited to a scope and an environment; the caller names the
@@ -77,7 +95,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - Stable `code` on API errors.
 
 ## [1.3.10] - 2026-09-06
- 
+
 ### Changed
 - Internal: licence state storage is configurable by connection.
 
@@ -88,7 +106,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   signs. Default stays `disk`.
 
 ## [1.3.8] - 2026-09-05
- 
+
 ### Fixed
 - Translations no longer stay in English on hosts that translate while
   registering their panels (the locale was loaded before the package
@@ -97,14 +115,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
   are served from the base catalogue.
 
 ## [1.3.7] - 2026-09-05
- 
+
 ### Fixed
 - Settings migrations are idempotent and all live under `database/settings`,
   so a host whose settings repository is shared by several databases (one
   migrate per tenant) no longer fails with "setting already exists".
 
 ## [1.3.5] - 2026-09-05
- 
+
 ### Changed
 - Leaner Composer archive (17 MB → 1 MB): screenshots, tests and CI stay
   in the repository; the print-agent installer downloads its binaries
@@ -119,7 +137,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   migrator instead.
 
 ## [1.3.0] - 2026-09-05
- 
+
 ### Added
 - Host hooks: `Verifactu::beforeIssuing()` — a veto with the host's own
   reason before completing, chaining, cancelling, booking or activating —
