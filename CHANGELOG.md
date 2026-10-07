@@ -4,6 +4,21 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.7.1] - 2026-10-07
+
+### Added
+
+- `->timezone()` on the plugin: the issue-date timezone set fluently, ahead
+  of `VERIFACTU_TIMEZONE`. Unknown timezones are refused.
+
+### Changed
+
+- README: the fluent options table lists `->installations()` and
+  `->timezone()`; the roadmap and the `->einvoicing()` row reflect Orden
+  HAC/1028/2026; the licensing section describes the current model, with no
+  runtime check.
+- The test suite runs with a 512M memory limit.
+
 ## [1.7.0] - 2026-10-07
 
 ### Added
@@ -39,7 +54,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- Requires `komma-softhouse/verifactu-engine` ^1.0, which skips the total
+- Requires `komma-softhouse/verifactu-engine` ^0.3.101, which skips the total
   amount check for the regime keys AEAT does not cross-check.
 
 ## v1.6.0 - 2026-09-24
