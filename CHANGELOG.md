@@ -4,7 +4,33 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.8.0] - 2026-10-09
+## [1.9.0] - 2026-10-07
+
+### Added
+
+- Full invoice in substitution of simplified invoices (F3):
+  `Verifactu::substituteSimplified()`, declared with the tickets it replaces
+  in VERI*FACTU and TicketBAI, and the "Full invoice for the customer"
+  action with its `substitute-ticket` ability.
+- Barcodes (EAN-13, EAN-8, UPC-A, Code 128, Code 39, ITF-14) and QR codes in
+  document, repair and contract templates, with markers, drawn as SVG and
+  printed with native ESC/POS commands; optional barcode per line.
+- Document templates for second-hand goods (REBU), chosen for documents with
+  margin-scheme lines.
+- Used-goods purchase contract template and `Verifactu::contractHtml()` /
+  `contractPdf()`.
+- Repair label (`labelHtml()` / `labelPdf()`) on label paper.
+
+### Fixed
+
+- A repair template created by the user now overrides the one seeded with
+  the plugin, as document templates already did.
+
+### Changed
+
+- Requires `picqer/php-barcode-generator` ^3.3.
+
+## [1.8.0] - 2026-10-07
 
 ### Added
 
