@@ -1,9 +1,3 @@
-# How this plugin is built, and how to sell it in pieces
-
-This is the guide that was missing: how the plugin works internally, and
-— the part asked for specifically — how the module/add-on structure maps
-to what you can charge for separately.
-
 ## 1. The core idea: one gate, two engines behind it
 
 Everything fiscal goes through a single class, `RecordService`. It never
