@@ -226,7 +226,15 @@ itself. `TicketBaiDriver::vendor()` is the single resolution point.
 
 ## 10. Integrity checks
 
-`ChainVerifier` verifies the AEAT chain twice per record — the link
+The chain head lives in `verifactu_chains`, one row per issuer and
+installation; `RecordService` locks that row, so installations never wait
+on each other's hashing beyond the issuer lock. The issuer's `last_*`
+columns mirror the configured installation only, for hosts that read them.
+Records chained by an offline installation enter through
+`RecordService::import()`, which checks continuity against that row and the
+content through `RecordHydrator` instead of hashing again.
+
+`ChainVerifier` verifies each installation's AEAT chain twice per record — the link
 (`previous_hash`) and the content (hash recomputed from the stored fields
 through `RecordHydrator`, the same rehydration used before every
 submission) — and reports `reason: link | content`. TicketBAI issuers get
