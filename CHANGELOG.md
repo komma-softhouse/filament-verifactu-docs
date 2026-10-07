@@ -39,7 +39,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- Requires `komma-softhouse/verifactu-engine` ^0.3.101, which skips the total
+- Requires `komma-softhouse/verifactu-engine` ^1.0, which skips the total
   amount check for the regime keys AEAT does not cross-check.
 
 ## v1.6.0 - 2026-09-24
