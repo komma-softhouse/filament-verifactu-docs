@@ -363,10 +363,12 @@ the first submission — see [Configuration](#configuration).
 | <code>->pdfDriver(Class::class)</code> | Your own <code>Printing\Contracts\PdfConverter</code> implementation |
 | <code>->brandingDisk($disk, $visibility = null)</code> | The filesystem disk template logos and watermark images are stored on and read from (<code>public</code> unless told otherwise — any disk of your <code>config/filesystems.php</code>: local, s3, minio…) |
 | <code>->computerSystem(...)</code> | The implementer identity for AEAT records (vendor name/NIF, product name/id/version, installation number) |
+| <code>->installations(fn (Issuer $issuer) => …)</code> | Which installation of the billing system each record is chained in when the call does not say — one chain per till or terminal. Without a panel: <code>Verifactu::resolveInstallationUsing()</code> |
+| <code>->timezone($timezone)</code> | Timezone of the issue date and of printed dates (<code>Europe/Madrid</code> unless told otherwise; <code>Atlantic/Canary</code> in the Canaries) |
 | <code>->ticketBai(...)</code> | The implementer identity for TicketBAI (developer NIF, product) and the **software-guarantor licences per territory** — the vendor's, never the customer's |
 | <code>->escPos()</code> | Thermal ticket printing |
 | <code>->printAgent()</code> | Print agent pairing page and installer generation |
-| <code>->einvoicing()</code> | Pending BOE publication of the Orden Ministerial (Ley Crea y Crece / RD 238/2026) |
+| <code>->einvoicing()</code> | Pending the AEAT technical specifications of the public e-invoicing solution (Orden HAC/1028/2026) |
 | <code>->face()</code> | FACe: the "Send to FACe" action, history, settings, generate and directory pages |
 | <code>->faceb2b()</code> | FACeB2B: the "Send to FACeB2B" action and cancellation requests |
 | <code>->ocr()</code> | The "Create from photo" OCR-assisted draft action and its settings page |
@@ -459,7 +461,8 @@ VERIFACTU_TBAI_LICENSE_GIPUZKOA=
 VERIFACTU_BRANDING_DISK=public
 VERIFACTU_BRANDING_VISIBILITY=        # empty = the disk's own default; public | private
 
-# Calendar day of the issue date and of printed dates (Atlantic/Canary in the Canaries)
+# Calendar day of the issue date and of printed dates (Atlantic/Canary in the
+# Canaries); ->timezone() on the plugin takes precedence
 VERIFACTU_TIMEZONE=Europe/Madrid
 
 # Submission pipeline
