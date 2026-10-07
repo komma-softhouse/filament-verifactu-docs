@@ -4,6 +4,15 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.9.1] - 2026-10-07
+
+### Fixed
+
+- With tax-included prices, the tax of each line is now what is left after
+  its base, so every line adds up to the price charged. Rounding the tax
+  separately from the rounded base could leave the document a cent away
+  from the sum of its prices (a 20.00 line and a -10.00 line made 10.01).
+
 ## [1.9.0] - 2026-10-07
 
 ### Added
