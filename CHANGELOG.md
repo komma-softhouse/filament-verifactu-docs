@@ -4,6 +4,21 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.8.0] - 2026-10-09
+
+### Added
+
+- Series formats per VAT regime: a type can have a second format for the
+  used-goods margin scheme (REBU). Documents with any margin-scheme line
+  number in it; without one they keep using the general series. Existing
+  formats serve the general regime.
+
+### Fixed
+
+- `{YEAR}` in a series format is the year in the fiscal timezone, like the
+  issue date: a sale at 00:30 on 1 January in Madrid no longer numbers in
+  the previous year's series.
+
 ## [1.7.1] - 2026-10-07
 
 ### Added
