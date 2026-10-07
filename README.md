@@ -459,6 +459,9 @@ VERIFACTU_TBAI_LICENSE_GIPUZKOA=
 VERIFACTU_BRANDING_DISK=public
 VERIFACTU_BRANDING_VISIBILITY=        # empty = the disk's own default; public | private
 
+# Calendar day of the issue date and of printed dates (Atlantic/Canary in the Canaries)
+VERIFACTU_TIMEZONE=Europe/Madrid
+
 # Submission pipeline
 VERIFACTU_QUEUE=verifactu
 VERIFACTU_BATCH_SIZE=1000
@@ -515,44 +518,15 @@ VERIFACTU_API=true
 
 ## Licensing at runtime
 
-The plugin validates its licence against Anystack once a day and keeps
-the verdict in the database (`verifactu_license_state`), so a
-`cache:clear` never restarts the clock. The fingerprint is **the host of
-`APP_URL`** — nobody types it, so a key bought for one domain does not
-validate on another.
+There is no licence check at runtime. The licence is enforced where it is
+sold: access to the private Composer repository, which every install and
+update goes through. Nothing calls home, nothing is stored about the
+licence in your database, and issuing never depends on a third-party
+server being reachable.
 
-There is nothing to configure. The licence key is the one you typed once
-at `composer require` — it lives in Composer's `auth.json` (in the project
-or in `COMPOSER_HOME`) on whichever machine runs the plugin, exactly as
-for any private package, and the plugin reads it from there. Renewals
-happen on Anystack, which the key already identifies; nobody ever types a
-key into the panel.
-
-The product, the endpoint, the fingerprint and the grace period are fixed
-in code on purpose — nothing about the check is a setting. Your own test
-suite never touches the licence server.
-
-What an expired, wrong-domain or missing licence means, in order:
-
-1. **30, 15 and 7 days before expiry** — a banner on every panel page.
-   Nothing changes.
-2. **Once the licence server says no** — a 15-day grace period: red
-   banner, everything keeps working. A three-day administrative delay
-   never takes a business down on a Friday.
-3. **After the grace period, issuing stops**: completing documents,
-   chaining records, submitting to the AEAT or a foral treasury, FACe,
-   OCR capture, booking purchases — from the panel, the facade and the
-   API sidecar alike, with the reason and a renewal link.
-4. **What never stops**: logging in, viewing and exporting every record,
-   document and submission already made, downloading PDFs and signed
-   XML, the FACe history, chain verification. The records belong to the
-   taxpayer, who is legally bound to keep and exhibit them; the licence
-   buys the right to issue new ones.
-
-If the licence server is unreachable, the last known verdict stands — our
-outage is never yours. `php artisan verifactu:license` shows the verdict,
-`--refresh` asks Anystack now; schedule it daily so the banner is fresh
-before anyone opens the panel.
+`php artisan verifactu:license` is kept as a command that does nothing and
+exits successfully, so schedules written for earlier versions keep running.
+It is removed in 2.0.
 
 ## Authorization
 
@@ -1264,6 +1238,82 @@ Content-Type: application/json
 }
 ```
 
+## Several tills: one chain per installation
+
+AEAT asks for one record chain per taxpayer and installation of the billing
+system: a till that issues its own invoices is an installation of its own.
+The plugin keeps a chain per issuer and installation, sends each installation
+in its own submission with its own `NumeroInstalacion`, and verifies each
+chain on its own. A host with a single installation changes nothing: records
+go to the installation configured in `VERIFACTU_INSTALLATION_NUMBER`.
+
+Which installation a record belongs to, in order of precedence:
+
+1. The call itself: `InvoiceData`/`CancellationData` take `installation:`,
+   and `SeriesContext` takes it as its third argument when completing a
+   document.
+2. A resolver from the host:
+
+```php
+// In a panel
+VerifactuPlugin::make()->installations(fn (Issuer $issuer): ?string => Till::current()?->installation);
+
+// Without a panel (queues, APIs, a headless host)
+Verifactu::resolveInstallationUsing(fn (Issuer $issuer): ?string => Till::current()?->installation);
+```
+
+3. The configured installation number.
+
+A cancellation always joins the chain of the installation that registered
+the invoice.
+
+### Tills that sell without a connection
+
+A till that runs the plugin locally numbers and chains its own documents
+while offline (its series carry `{TERMINAL}`, so nobody else writes them).
+When it reconnects, the server adopts what it issued instead of chaining it
+again:
+
+```php
+Verifactu::adoptDocument(
+    document: $draft,              // the synced lines, as a draft
+    series: 'T2026011',
+    number: 42,                    // must be the next one of the series
+    completedAt: $completedAt,
+    total: '300.00',               // must match the recomputed total
+    installation: 'TPV-01',
+    record: ['previous_hash' => $previousHash, 'hash' => $hash, 'hashed_at' => $hashedAt],
+);
+```
+
+The record must continue that installation's chain and its hash must match
+its content, or nothing is stored. Sending the same record twice returns
+the one already stored, so a sync cut half-way can simply be retried.
+Records without a document go through `Verifactu::importRecord()`.
+
+Adoption is for VERI*FACTU-mode issuers under the AEAT regime: a
+non-Verifactu record is signed where it is generated, and TicketBAI chains
+by signature.
+
+## Used goods: the margin scheme (REBU)
+
+A line under the special scheme for second-hand goods carries
+`regime_key = '03'` and `margin_unit_cost`, the tax-inclusive unit cost of
+the item. Its price is always the final price; the VAT is computed on the
+margin only:
+
+```
+margin = price − quantity × margin_unit_cost
+base   = margin × 100 / (100 + rate)        (zero when the margin is negative)
+quota  = margin − base
+```
+
+The record carries `ClaveRegimen 03` and `CalificacionOperacion S1` with the
+margin base, while `ImporteTotal` stays the full price (AEAT does not
+cross-check the total for key 03). General and margin-scheme lines can share
+a document: each gets its own breakdown group. Printed documents never show
+the VAT of those lines and carry the legal mention of the scheme.
+
 ## Recurring documents, catalog, aging
 
 **Recurring documents** (Billing → Recurring documents): a template — customer,
@@ -1596,16 +1646,20 @@ every issuer.
 
 ## Roadmap
 
-**B2B electronic invoicing** (Ley 18/2022 "Crea y Crece", RD 238/2026): the
-Reglamento is already published (BOE, 31 March 2026) and mandates EN 16931 /
-UBL for structured B2B invoices, but the Orden Ministerial fixing the
-technical detail of Hacienda's public solution is still pending its
-definitive BOE publication (public consultation closed 8 May 2026, in force
-expected 1 October 2026 — the date that starts the 12/24-month countdown to
-mandatory adoption in October 2027, >€8M turnover, and October 2028 for
-everyone else). `->einvoicing()` will ship once that Order is published and
-its technical annex is stable enough to build against. This is unrelated to
-FACeB2B (Ley 25/2013), already fully supported today.
+**B2B electronic invoicing** (Ley 18/2022 "Crea y Crece", RD 238/2026,
+Orden HAC/1028/2026): the Reglamento was published in the BOE on 31 March
+2026 and the Orden Ministerial regulating Hacienda's public e-invoicing
+solution on 5 October 2026. The Order entered into force on 6 October
+2026, which starts the countdown to mandatory adoption: 12 months for
+issuers with more than €8M turnover (October 2027) and 24 months for
+everyone else (October 2028). Invoices issued or exchanged through the
+public solution follow the EN 16931 semantic model in UBL syntax; issuers
+that use a private platform must send the public solution a faithful UBL
+copy of every invoice as they issue it, and recipients must report payment
+or rejection. The Order fixes the UBL fields; the web services, technical
+specifications and volumes are published on the AEAT electronic office,
+and `->einvoicing()` ships against them once they are out. This is
+unrelated to FACeB2B (Ley 25/2013), already fully supported today.
 
 **FACeB2B received-invoices inbox**: sending, cancelling and status-checking
 are built and wired into the panel; the full receiver-side lifecycle
@@ -1613,18 +1667,22 @@ are built and wired into the panel; the full receiver-side lifecycle
 signatures) is implemented at the service/facade layer but has no dedicated
 panel screen yet for browsing invoices this issuer has received.
 
-**Document module over the API** for external POS/ERP terminals that want
-this plugin to number, fiscalize and render their documents (create a
-draft with lines, complete it, fetch the PDF) — today the sidecar assumes
-the terminal owns its numbering and only needs the fiscal record and the
-QR.
+**Offline adoption over the API**: the documents API already lets an
+external POS or ERP have this plugin number, fiscalize and render its
+documents (create a draft with lines, complete it, convert, credit, void,
+fetch the PDF). Adopting what an offline till already numbered and chained
+— `Verifactu::adoptDocument()` and `Verifactu::importRecord()`, see
+[Tills that sell without a connection](#tills-that-sell-without-a-connection)
+— is available from PHP; the API endpoints for terminals that do not run
+PHP come next.
 
-**SII (Suministro Inmediato de Información)**: near-real-time VAT ledger
-submission for REDEME and large-company issuers — the AEAT flavour and the
-foral ones that exist (Navarra runs its own SII; Bizkaia's ledger duty is
-already Batuz/LROE, which this plugin submits today, both chapters). Both
-ledgers exist now — issued invoices from the chained records, received
-ones from the expenses module — so `->sii()` is the next engine.
+**SII (Suministro Inmediato de Información)**, in development:
+near-real-time VAT ledger submission for REDEME and large-company issuers
+— the AEAT flavour and the foral ones that exist (Navarra runs its own
+SII; Bizkaia's ledger duty is already Batuz/LROE, which this plugin submits
+today, both chapters). Both ledgers already exist — issued invoices from
+the chained records, received ones from the expenses module — and
+`->sii()` is built on them.
 
 **NaTicket engine**: everything around it already ships — see
 [Navarra: the fourth regime](#navarra-the-fourth-regime). The driver
