@@ -4,9 +4,52 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.7.0] - 2026-10-07
+
+### Added
+
+- One AEAT chain per issuer and installation of the billing system, as AEAT
+  requires for tills that issue their own invoices. New `verifactu_chains`
+  table; records and submissions carry their installation.
+- The installation comes from the call (`InvoiceData`, `CancellationData`,
+  `SeriesContext`), a host resolver (`->installations()` on the plugin or
+  `Verifactu::resolveInstallationUsing()` without a panel) or the configured
+  number, in that order.
+- Each submission holds a single installation and sends its own
+  `NumeroInstalacion`; the chain verifier walks each installation on its own;
+  a cancellation joins the chain of the installation that registered the
+  invoice.
+- Offline tills: `Verifactu::adoptDocument()` completes a document an
+  installation already numbered and chained, and `Verifactu::importRecord()`
+  adopts a chained record. Both refuse anything that does not continue the
+  chain, does not match its hash or skips a number, and are idempotent.
+- Used-goods margin scheme (REBU): `regime_key` and `margin_unit_cost` on
+  document lines, VAT computed on the margin, `ClaveRegimen 03` in the
+  record, TicketBAI regimes taken from the breakdown, printed documents
+  without the VAT of those lines and with the legal mention. Also in the
+  documents API and its OpenAPI schema.
+- `VERIFACTU_TIMEZONE` (`Europe/Madrid` by default).
+
+### Fixed
+
+- The issue date was the UTC calendar day of completion: a sale between
+  midnight and 02:00 in Madrid was dated the day before. It is now the local
+  day in `VERIFACTU_TIMEZONE`, also in Facturae, the ledger export and
+  printed documents.
+
+### Changed
+
+- Requires `komma-softhouse/verifactu-engine` ^0.3.101, which skips the total
+  amount check for the regime keys AEAT does not cross-check.
+
+## v1.6.0 - 2026-09-24
+
+Removes the runtime licence check: the licence is Composer access to the private repository. Drops verifactu_license_state. See CHANGELOG.md.
+
 ## [1.6.0] - 2026-09-24
 
 ### Removed
+
 - The runtime licence check: the daily call to the licence server, the
   licence banner, the grace period and the pause in issuing. The licence
   is enforced where it is sold — access to the private Composer
@@ -15,9 +58,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - The `license.connection` config key and `VerifactuGate::LICENSED_ABILITIES`.
 
 ### Changed
+
 - The OpenAPI document reports the installed package version.
 
 ### Deprecated
+
 - `verifactu:license` does nothing and exits successfully, so schedules
   that call it keep running. `LicenseExpiredException` is no longer
   thrown. Both are removed in 2.0.
@@ -25,6 +70,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.5.0] - 2026-09-17
 
 ### Added
+
 - `SurfaceGate`: the authorization layer above actions. Pages and widgets
   have no model, so a host's policies could never reach them and every
   section of the panel was visible to everyone the plugin was registered
@@ -36,30 +82,34 @@ project adheres to [Semantic Versioning](https://semver.org/).
   install is unchanged.
 - `surfaces` config block, one switch per section.
 
-## [1.4.5] - 2026-09-07
+## [1.4.5](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.5) - 2026-09-07
 
 ### Added
+
 - `api.middleware`: the middleware stack the API sidecar and the print-agent
   routes run on (`['api']` by default), for hosts that scope data per
   domain.
 
-## [1.4.4] - 2026-09-06
+## [1.4.4](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.4) - 2026-09-06
 
 ### Added
+
 - `->reports(false)` and `->events(false)` toggles, and the `->developer()`
   preset (`->api()->reports(false)->events(false)`) for a console that only
   needs the chain: issuers, records, submissions, certificates, API.
 
-## [1.4.3] - 2026-09-06
+## [1.4.3](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.3) - 2026-09-06
 
 ### Changed
+
 - OpenAPI document: every text goes through the translator (Spanish
   shipped; other languages fall back to English), and the regimes section
   is written as paragraphs instead of a table.
 
-## [1.4.2] - 2026-09-06
+## [1.4.2](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.2) - 2026-09-06
 
 ### Changed
+
 - OpenAPI document: regimes table (VERI*FACTU, non-VERI*FACTU, TicketBAI
   per territory, Navarra), environments, authentication, idempotency and
   error-code reference in the introduction; request examples per regime on
@@ -70,15 +120,17 @@ project adheres to [Semantic Versioning](https://semver.org/).
   translator: the reference renders in the application's locale (Spanish
   shipped; the other languages fall back to English until translated).
 
-## [1.4.1] - 2026-09-06
+## [1.4.1](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.1) - 2026-09-06
 
 ### Changed
+
 - `->api()` on a panel turns the API sidecar on for the whole application;
   `VERIFACTU_API` stays for installations with no panel.
 
-## [1.4.0] - 2026-09-06
+## [1.4.0](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.0) - 2026-09-06
 
 ### Added
+
 - Account API keys (`vfk_test_…` / `vfk_live_…`): one key for several
   issuers, limited to a scope and an environment; the caller names the
   issuer with `X-Issuer`. Created from the API page.
@@ -94,20 +146,23 @@ project adheres to [Semantic Versioning](https://semver.org/).
   routes.
 - Stable `code` on API errors.
 
-## [1.3.10] - 2026-09-06
+## [1.3.10](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.10) - 2026-09-06
 
 ### Changed
+
 - Internal: licence state storage is configurable by connection.
 
 ### Added
+
 - `VERIFACTU_CERTIFICATES_STORAGE=database`: the `.p12` container lives
   encrypted with `APP_KEY` on the issuer row (and the social-collaborator one
   in settings), materialised as a private temporary file only while an engine
   signs. Default stays `disk`.
 
-## [1.3.8] - 2026-09-05
+## [1.3.8](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.8) - 2026-09-05
 
 ### Fixed
+
 - Translations no longer stay in English on hosts that translate while
   registering their panels (the locale was loaded before the package
   registered its catalogue).
@@ -117,28 +172,32 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ## [1.3.7] - 2026-09-05
 
 ### Fixed
+
 - Settings migrations are idempotent and all live under `database/settings`,
   so a host whose settings repository is shared by several databases (one
   migrate per tenant) no longer fails with "setting already exists".
 
-## [1.3.5] - 2026-09-05
+## [1.3.5](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.5) - 2026-09-05
 
 ### Changed
+
 - Leaner Composer archive (17 MB → 1 MB): screenshots, tests and CI stay
   in the repository; the print-agent installer downloads its binaries
   itself.
 
-## [1.3.1] - 2026-09-05
+## [1.3.1](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.1) - 2026-09-05
 
 ### Added
+
 - `VERIFACTU_MIGRATIONS=false` (config `migrations.enabled`): keeps the
   package's migrations out of the host's central `migrate`, for multi-tenant
   hosts with a database per tenant that run them through their tenant
   migrator instead.
 
-## [1.3.0] - 2026-09-05
+## [1.3.0](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0) - 2026-09-05
 
 ### Added
+
 - Host hooks: `Verifactu::beforeIssuing()` — a veto with the host's own
   reason before completing, chaining, cancelling, booking or activating —
   and domain events after commit (`IssuerActivated`, `DocumentCompleted`,
@@ -161,14 +220,17 @@ project adheres to [Semantic Versioning](https://semver.org/).
   their report pages: 347 and 349 (500-position records), 303, 111 and 115
   (tagged self-assessment layout, 2026 designs). The 347 draft now carries
   the quarterly split and the party's postal code.
+
 ### Changed
+
 - Row actions grouped behind a "More" menu with sections on the six large
   tables (documents, received documents, repairs, records, FACe history,
   fiscal calendar): two or three primary buttons stay visible.
 
-## [1.2.2] - 2026-09-04
+## [1.2.2](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.2) - 2026-09-04
 
 ### Changed
+
 - The licence check's test-suite exclusion detects the test runner itself
   (its classes loaded), not `APP_ENV`: an environment variable is a
   setting, and a setting that switches the check off would be no check at
@@ -179,9 +241,10 @@ project adheres to [Semantic Versioning](https://semver.org/).
   exclusion mechanism, and the FACe example names a fictitious
   administration.
 
-## [1.2.0] - 2026-09-04
+## [1.2.0](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.0) - 2026-09-04
 
 ### Added
+
 - Fiscal calendar: every issuer's obligations under its treasury's models,
   with statutory deadlines, an overdue badge, "Fill in" opening the exact
   draft, the treasury portal, and filed / omitted states with the receipt
@@ -203,12 +266,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
   an SII-exempt issuer and the calendar.
 
 ### Fixed
+
 - Fourth-quarter deadline of the AEAT withholding models (111, 115) is
   20 January, not 30.
 
-## [1.1.1] - 2026-09-03
+## [1.1.1](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.1) - 2026-09-03
 
 ### Changed
+
 - Provenance notes in 21 docblocks rewritten without naming other
   products; comments only.
 - README links to the architecture, changelog, security policy and
@@ -216,9 +281,10 @@ project adheres to [Semantic Versioning](https://semver.org/).
   resolve from the Filament plugin directory as well as from GitHub.
 - The licence check reports release `1.1.1` in its validation scope.
 
-## [1.1.0] - 2026-09-03
+## [1.1.0](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.0) - 2026-09-03
 
 ### Added
+
 - Runtime licence check against Anystack (`LicenseGuard`): the key is read
   from Composer's `auth.json` — nothing to configure — and validated daily
   with the host of `APP_URL` as fingerprint; verdict persisted in
@@ -231,6 +297,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
   and refreshes the verdict.
 
 ### Fixed
+
 - `AeatQueryService` posted to a `/ConsultaSOAP` path that does not exist
   at the AEAT; the query operation is served by the same `VerifactuSOAP`
   endpoint as the submissions.
@@ -240,11 +307,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - Fiscal records table gains a copyable, searchable CSV column (TBAI
   identifier for foral records).
 
-## [1.0.0] - 2026-09-03
+## [1.0.0](https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.0.0) - 2026-09-03
 
 First release: everything below ships together; nothing was published before.
 
 ### Added
+
 - Navarra as the fourth fiscal regime: full document lifecycle for
   Navarrese issuers with the antifraud activation locked (NaTicket has no
   published specification yet, so nothing is chained), report drafts under
@@ -367,7 +435,7 @@ First release: everything below ships together; nothing was published before.
 - **Template fidelity**: A4, ticket and SAT papers mirror the designers
   field by field (logo, colours, texts, labels, watermark text/image with
   geometry, legend, QR, SAT title/clauses/toggles), on screen and on PDF,
-  regime-aware (VERI\*FACTU legend, AEAT non-Verifactu QR only, TicketBAI
+  regime-aware (VERI*FACTU legend, AEAT non-Verifactu QR only, TicketBAI
   identifier). In-panel previews for fiscal documents and SAT papers.
 - **Branding disk** (`->brandingDisk()`, `VERIFACTU_BRANDING_DISK`): one
   configurable disk for template logos and watermark images, shared by
@@ -391,21 +459,3 @@ First release: everything below ships together; nothing was published before.
 - Chain verification of link and content (`reason: link | content`),
   Wireable report DTOs, user names in the audit trail, live validation on
   every validated form field (`->validatesLive()`).
-
-[1.4.5]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.5
-[1.4.4]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.4
-[1.4.3]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.3
-[1.4.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.2
-[1.4.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.1
-[1.4.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.4.0
-[1.3.10]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.10
-[1.3.9]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.9
-[1.3.8]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.8
-[1.3.5]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.5
-[1.3.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.1
-[1.3.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.3.0
-[1.2.2]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.2
-[1.2.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.2.0
-[1.1.1]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.1
-[1.1.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.1.0
-[1.0.0]: https://github.com/komma-softhouse/filament-verifactu/releases/tag/v1.0.0
