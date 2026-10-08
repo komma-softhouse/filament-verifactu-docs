@@ -4,6 +4,42 @@ All notable changes to `filament-verifactu` are documented here. The format
 follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.11.0] - 2026-10-08
+
+### Added
+
+- Several print agents per issuer: one per till or store, each with its own
+  token, printer and channel (`private-printer.agent-{id}`). Managed from the
+  issuer's *Print agents* tab: add, download installer and uninstaller, test
+  print, new token.
+- `Verifactu::printTicket()` prints through the agent of the till that
+  issued the document (or an explicit installation), falling back to the
+  issuer's own agent.
+- `Verifactu::printTo()` sends raw ESC/POS bytes to one agent;
+  `Verifactu::agentInstaller()` builds its Windows installer.
+
+### Fixed
+
+- The agent binary calls `/api/printer-agent/*` and reads its channel from
+  `company_id`; the plugin now serves that path and returns that key (and
+  still answers on `/api/v1/printer-agent/*`).
+
+## [1.10.0] - 2026-10-07
+
+### Added
+
+- Self-billing (autofacturación): `Verifactu::selfBilledSupplier()` creates
+  the issuer that stands for a supplier whose invoices the business issues
+  on its behalf. Its invoices have their own series and chain, their records
+  declare `EmitidaPorTerceroODestinatario = D`, and they are sent with the
+  business's certificate as its representative.
+- The computer system declares several taxpayers (`IndicadorMultiplesOT`)
+  as soon as one self-billed supplier exists.
+
+### Changed
+
+- Requires `komma-softhouse/verifactu-engine` ^0.3.102.
+
 ## [1.9.1] - 2026-10-07
 
 ### Fixed
