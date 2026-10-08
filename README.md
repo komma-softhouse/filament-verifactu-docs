@@ -1342,6 +1342,24 @@ already replaced, one with returned lines, or a call without the customer
 NIF is refused. In the panel it is the "Full invoice for the customer"
 action of a completed ticket, authorised by the `substitute-ticket` ability.
 
+## Self-billing
+
+A business that issues, on behalf of a supplier or collaborator, the
+invoices that supplier would issue to it (commissions settled to franchises
+and agents, for example) registers that supplier once:
+
+```php
+$supplier = Verifactu::selfBilledSupplier($business, 'Telecomunicaciones Louriña SL', 'B12345678');
+```
+
+The supplier is an issuer of its own, with its own series and chain, already
+activated in the business's regime and mode. Its invoices are drafted and
+completed like any other document, with the business as the customer; their
+records declare that the recipient issued them, and they are sent with the
+business's certificate as the supplier's representative. The business needs
+the self-billing agreement with each supplier and its authorisation to send
+on their behalf.
+
 ## Barcodes and QR codes in templates
 
 Document templates (A4 and ticket), repair templates and contract templates
@@ -1518,6 +1536,15 @@ the printer:
    broadcast to the agent (`PrintJobDispatched` on a private channel), which
    pushes the raw ESC/POS bytes to the paired printer. *Test print* sends a
    real ticket with logo and cut.
+
+**One agent per till or store.** An issuer with several printers — one per
+store, one per till — adds an agent for each in the issuer's *Print agents*
+tab: name, printer address and, optionally, the till installation whose
+documents it prints. Each agent has its own token, installer and channel.
+`Verifactu::printTicket()` sends a document to the agent of the till that
+issued it, and `Verifactu::printTo($agent, $type, $bytes)` sends anything
+else (labels, reports) to a chosen one. The issuer-level agent above keeps
+working for single-printer setups.
 
 The agent listens over websockets, so the host needs a **broadcasting
 connection**: Laravel Reverb or Pusher configured under
